@@ -17,7 +17,7 @@ bool ValidadeInput(std::string input, float& result)
 
         if (input[i] != '0' && input[i] != '1' && input[i] != '2' && input[i] != '3' && input[i] != '4' && input[i] != '5' && input[i] != '6' && input[i] != '7' && input[i] != '8' && input[i] != '9' && !(input[i] == '-' && i == 0) && !((input[i] == '.' || input[i] == ',') && fraction == false))
         {
-            std::cout << std::endl << std::endl << "INPUT INVALID" << std::endl;
+            std::cout << std::endl << std::endl << "INPUT INVALIDO" << std::endl;
             return false;
         }
         else
@@ -105,4 +105,35 @@ bool ValidadeInput(std::string input, float& result)
     }
 
     return true;
+}
+
+
+bool ValidadeInput(std::string input)
+{
+    bool fraction = false;
+
+    int FractionPosition = 0;
+
+    for (int i = 0; i < input.size(); i++)
+    {
+        float num = 0;
+
+        if (input[i] != '0' && input[i] != '1' && input[i] != '2' && input[i] != '3' && input[i] != '4' && input[i] != '5' && input[i] != '6' && input[i] != '7' && input[i] != '8' && input[i] != '9' && !(input[i] == '-' && i == 0) && !((input[i] == '.' || input[i] == ',') && fraction == false))
+        {
+            std::cout << std::endl << std::endl << "INPUT INVALIDO" << std::endl;
+            return false;
+        }
+        else
+        {
+            switch (input[i])
+            {
+            case '.':
+                fraction = true;
+                break;
+
+            case ',':
+                fraction = true;
+            }
+        }
+    }
 }
