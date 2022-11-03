@@ -11,3224 +11,3236 @@
 bool ValidadeInput(std::string input, float& result)
 {
 
-    bool negative = false;
+	bool negative = false;
 
-    bool fraction = false;
+	bool fraction = false;
 
-    int FractionPosition = 0;
+	int FractionPosition = 0;
 
-    result = 0;
+	result = 0;
 
-    for (int i = 0; i < input.size(); i++)
-    {
-        float num = 0;
+	for (int i = 0; i < input.size(); i++)
+	{
+		float num = 0;
 
-        switch (input[i])
-        {
-        default:
-            return false;
-            break;
+		switch (input[i])
+		{
+		default:
+			return false;
+			break;
 
-        case '0':
-            num = 0;
-            break;
+		case '0':
+			num = 0;
+			break;
 
-        case '1':
-            num = 1;
-            break;
+		case '1':
+			num = 1;
+			break;
 
-        case '2':
-            num = 2;
-            break;
+		case '2':
+			num = 2;
+			break;
 
-        case '3':
-            num = 3;
-            break;
+		case '3':
+			num = 3;
+			break;
 
-        case '4':
-            num = 4;
-            break;
+		case '4':
+			num = 4;
+			break;
 
-        case '5':
-            num = 5;
-            break;
+		case '5':
+			num = 5;
+			break;
 
-        case '6':
-            num = 6;
-            break;
+		case '6':
+			num = 6;
+			break;
 
-        case '7':
-            num = 7;
-            break;
+		case '7':
+			num = 7;
+			break;
 
-        case '8':
-            num = 8;
-            break;
+		case '8':
+			num = 8;
+			break;
 
-        case '9':
-            num = 9;
-            break;
+		case '9':
+			num = 9;
+			break;
 
-        case '-':
-            if (i == 0)
-                negative = true;
-            else
-            {
-                return false;
-            }
-            break;
+		case '-':
+			if (i == 0)
+				negative = true;
+			else
+			{
+				return false;
+			}
+			break;
 
-        case '.':
-            if (fraction == false)
-            {
-                fraction = true;
-            }
-            else
-            {
-                return false;
-            }
-            break;
+		case '.':
+			if (fraction == false)
+			{
+				fraction = true;
+			}
+			else
+			{
+				return false;
+			}
+			break;
 
-        case ',':
-            if (fraction == false)
-            {
-                fraction = true;
-            }
-            else
-            {
-                return false;
-            }
-            break;
-        }
+		case ',':
+			if (fraction == false)
+			{
+				fraction = true;
+			}
+			else
+			{
+				return false;
+			}
+			break;
+		}
 
-        if (!fraction)
-        {
-            result *= 10;
+		if (!fraction)
+		{
+			result *= 10;
 
-            result += num;
-        }
-        else
-        {
-            if (!(input[i] == '.' || input[i] == ','))
-            {
-                num /= pow(10, (i - FractionPosition));
+			result += num;
+		}
+		else
+		{
+			if (!(input[i] == '.' || input[i] == ','))
+			{
+				num /= pow(10, (i - FractionPosition));
 
-                result += num;
-            }
-            else
-            {
-                FractionPosition = i;
-            }
-        }
+				result += num;
+			}
+			else
+			{
+				FractionPosition = i;
+			}
+		}
 
-    }
+	}
 
-    if (negative == true)
-    {
-        result *= -1;
-    }
+	if (negative == true)
+	{
+		result *= -1;
+	}
 
-    return true;
+	return true;
 }
 
 bool ValidadeInput(std::string input)
 {
-    float a;
-    return ValidadeInput(input, a);
+	float a;
+	return ValidadeInput(input, a);
 }
 
 struct Reagentes
 {
-    std::string Nome;
-    float PesoSalvo, PesoAtual;
-
-    Reagentes(std::string Nome) : Nome(Nome), PesoAtual(0), PesoSalvo(0)
-    {
-        std::fstream Reag(Arq.c_str(), std::ios::in | std::ios::binary);
-        std::fstream ReagH(ArqH.c_str(), std::ios::out | std::ios::app | std::ios::binary);
-
-
-        if (Reag.is_open())
-        {
-            int fim;
-            Reag.seekg(0, std::ios::end);
-            fim = Reag.tellg();
-            Reag.seekg(0, std::ios::beg);
-
-            while (Reag.tellg() < fim)
-            {
-                char Marca;
-
-                Reag.read(&Marca, sizeof(char));
-
-                if (Marca == -1)
-                {
-                    unsigned int NomeSize;
-                    Reag.read((char*)&NomeSize, sizeof(int));
-
-                    Reag.seekg(NomeSize, std::ios::cur);
-
-                    float Peso;
-
-                    Reag.read((char*)&Peso, sizeof(float));
-
-                    PesoSalvo += Peso;
-
-                    Reag.seekg(sizeof(float) + (sizeof(int) * 4), std::ios::cur);
-                }
-            }
-
-            ReagH.seekg(0, std::ios::end);
-            int Fim = ReagH.tellg();
-
-            if (Fim <= 1)
-            {
-                char Marca = -1;
-                ReagH.write(&Marca, sizeof(char));
-                ReagH.write((char*)&PesoSalvo, sizeof(float));
-            }
-
-            PesoAtual = PesoSalvo;
-        }
-        else
-        {
-            std::cout << "Essa lista ainda nao foi inicializada!!!\n";
-        }
-    }
-
-    bool CriarReagente(std::string Nome, float Peso, float PesoCont, float PesoMin, int dia, int mes, int ano, int Alerta)
-    {
-        std::ofstream Reag(Arq.c_str(), std::ios::out | std::ios::app | std::ios::binary); //abre o arquivo			
-        std::ofstream ReagMin(ArqMi.c_str(), std::ios::out | std::ios::app | std::ios::binary);
-
-        if (!Reag.is_open() || Reag.bad())
-        {
-            std::cout << "problema ao abrir o arquvo!!\tLinha: 155\n";
-            return false;
-        }
-
-        if (!ReagMin.is_open() || ReagMin.bad())
-        {
-            std::cout << "problema ao abrir o arquvo!!\tLinha: 210\n";
-            return false;
-        }
-
-        char Marca = -1;
-        Reag.write(&Marca, sizeof(char));
-        ReagMin.write(&Marca, sizeof(char));
-
-        unsigned int NomeSize = Nome.size() - 1;
+	std::string Nome;
+	float PesoSalvo, PesoAtual;
+
+	Reagentes(std::string Nome) : Nome(Nome), PesoAtual(0), PesoSalvo(0)
+	{
+		std::fstream Reag(Arq.c_str(), std::ios::in | std::ios::binary);
+		std::fstream ReagH(ArqH.c_str(), std::ios::out | std::ios::app | std::ios::binary);
+
+
+		if (Reag.is_open())
+		{
+			int fim;
+			Reag.seekg(0, std::ios::end);
+			fim = Reag.tellg();
+			Reag.seekg(0, std::ios::beg);
+
+			while (Reag.tellg() < fim)
+			{
+				char Marca;
+
+				Reag.read(&Marca, sizeof(char));
+
+				if (Marca == -1)
+				{
+					unsigned int NomeSize;
+					Reag.read((char*)&NomeSize, sizeof(int));
+
+					Reag.seekg(NomeSize, std::ios::cur);
+
+					float Peso;
+
+					Reag.read((char*)&Peso, sizeof(float));
+
+					PesoSalvo += Peso;
+
+					Reag.seekg(sizeof(float) + (sizeof(int) * 4), std::ios::cur);
+				}
+			}
+
+			ReagH.seekg(0, std::ios::end);
+			int Fim = ReagH.tellg();
+
+			if (Fim <= 1)
+			{
+				char Marca = -1;
+				ReagH.write(&Marca, sizeof(char));
+				ReagH.write((char*)&PesoSalvo, sizeof(float));
+			}
+
+			PesoAtual = PesoSalvo;
+		}
+		else
+		{
+			std::cout << "Essa lista ainda nao foi inicializada!!!\n";
+		}
+	}
+
+	bool CriarReagente(std::string Nome, float Peso, float PesoCont, float PesoMin, int dia, int mes, int ano, int Alerta)
+	{
+		std::ofstream Reag(Arq.c_str(), std::ios::out | std::ios::app | std::ios::binary); //abre o arquivo			
+		std::ofstream ReagMin(ArqMi.c_str(), std::ios::out | std::ios::app | std::ios::binary);
+
+		if (!Reag.is_open() || Reag.bad())
+		{
+			std::cout << "problema ao abrir o arquvo!!\tLinha: 155\n";
+			return false;
+		}
+
+		if (!ReagMin.is_open() || ReagMin.bad())
+		{
+			std::cout << "problema ao abrir o arquvo!!\tLinha: 210\n";
+			return false;
+		}
+
+		char Marca = -1;
+		Reag.write(&Marca, sizeof(char));
+		ReagMin.write(&Marca, sizeof(char));
+
+		unsigned int NomeSize = Nome.size() - 1;
 
-        Reag.write((char*)&NomeSize, sizeof(unsigned int));
-        Reag.write(Nome.c_str(), NomeSize);
-        Reag.write((char*)&Peso, sizeof(float));
-        Reag.write((char*)&PesoCont, sizeof(float));
-        Reag.write((char*)&dia, sizeof(int));
-        Reag.write((char*)&mes, sizeof(int));
-        Reag.write((char*)&ano, sizeof(int));
-        Reag.write((char*)&Alerta, sizeof(int));
-        ReagMin.write((char*)&PesoMin, sizeof(float));
-        PesoSalvo += Peso;
-
-        Reag.close();
-    }
-
-    bool RemoverReagente(std::string Nome)
-    {
-        int LocalReag = EscolherReag(Nome);
-
-
-        if (LocalReag > -1)
-        {
-            if (LocalReag > 0)
-                GetAntes(Arq, LocalReag - 1);
-            GetDepois(Arq, LocalReag - 1);
-
-            WriteAntes(Arq);
-            WriteDepois(Arq);
-
-            std::fstream Reag(Arq, std::ios::in | std::ios::binary);
-            std::fstream ReagMin(ArqMi, std::ios::in | std::ios::binary);
-
-            int Lugar = LocalReag;
-            int LugarMin = 0;
-
-            if (Lugar > -1)
-            {
-                while (Reag.tellg() < Lugar - 1)
-                {
-                    char Marca = 0;
+		Reag.write((char*)&NomeSize, sizeof(unsigned int));
+		Reag.write(Nome.c_str(), NomeSize);
+		Reag.write((char*)&Peso, sizeof(float));
+		Reag.write((char*)&PesoCont, sizeof(float));
+		Reag.write((char*)&dia, sizeof(int));
+		Reag.write((char*)&mes, sizeof(int));
+		Reag.write((char*)&ano, sizeof(int));
+		Reag.write((char*)&Alerta, sizeof(int));
+		ReagMin.write((char*)&PesoMin, sizeof(float));
+		PesoSalvo += Peso;
+
+		Reag.close();
+	}
+
+	bool RemoverReagente(std::string Nome)
+	{
+		int LocalReag = EscolherReag(Nome);
+
+
+		if (LocalReag > -1)
+		{
+			if (LocalReag > 0)
+				GetAntes(Arq, LocalReag - 1);
+			GetDepois(Arq, LocalReag - 1);
+
+			WriteAntes(Arq);
+			WriteDepois(Arq);
+
+			std::fstream Reag(Arq, std::ios::in | std::ios::binary);
+			std::fstream ReagMin(ArqMi, std::ios::in | std::ios::binary);
+
+			int Lugar = LocalReag;
+			int LugarMin = 0;
+
+			if (Lugar > -1)
+			{
+				while (Reag.tellg() < Lugar - 1)
+				{
+					char Marca = 0;
 
-                    Reag.read(&Marca, sizeof(char));
-
-                    if (Marca != -1)
-                        std::cout << "Problema ao ler o arquivo\tLinha: 441\n";
+					Reag.read(&Marca, sizeof(char));
+
+					if (Marca != -1)
+						std::cout << "Problema ao ler o arquivo\tLinha: 441\n";
 
-                    LugarMin++;
-                    unsigned int NomeSize;
-                    Reag.read((char*)&NomeSize, sizeof(unsigned int));
-                    Reag.seekg(NomeSize + (sizeof(float) * 2) + (sizeof(int) * 4), std::ios::cur);
-                }
+					LugarMin++;
+					unsigned int NomeSize;
+					Reag.read((char*)&NomeSize, sizeof(unsigned int));
+					Reag.seekg(NomeSize + (sizeof(float) * 2) + (sizeof(int) * 4), std::ios::cur);
+				}
 
-                LugarMin *= sizeof(char) + sizeof(float);
+				LugarMin *= sizeof(char) + sizeof(float);
 
-                if (LugarMin > 1)
-                {
-                    std::fstream ReagT(ArqA.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
+				if (LugarMin > 1)
+				{
+					std::fstream ReagT(ArqA.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
 
-                    if (ReagT.bad() || !ReagT.is_open())
-                    {
-                        std::cout << "Problema ao abrir o arquivo!!\tLinha: 371";
-                        return false;
-                    }
+					if (ReagT.bad() || !ReagT.is_open())
+					{
+						std::cout << "Problema ao abrir o arquivo!!\tLinha: 371";
+						return false;
+					}
 
-                    bool NewUsado = false;
-                    char a = 'a';
-                    char* TempA = &a;
+					bool NewUsado = false;
+					char a = 'a';
+					char* TempA = &a;
 
-                    if (LugarMin > 100)
-                    {
-                        TempA = new char[100];
-                        NewUsado = true;
-                    }
+					if (LugarMin > 100)
+					{
+						TempA = new char[100];
+						NewUsado = true;
+					}
 
-                    while (LugarMin - ReagMin.tellg() > 100)
-                    {
-                        ReagMin.read(TempA, 100);
+					while (LugarMin - ReagMin.tellg() > 100)
+					{
+						ReagMin.read(TempA, 100);
 
-                        ReagT.write(TempA, 100);
-                    }
+						ReagT.write(TempA, 100);
+					}
 
-                    if (NewUsado)
-                    {
-                        delete[] TempA;
-                    }
+					if (NewUsado)
+					{
+						delete[] TempA;
+					}
 
-                    int distancia = LugarMin - ReagMin.tellg();
+					int distancia = LugarMin - ReagMin.tellg();
 
-                    if (distancia)
-                    {
-                        TempA = new char[distancia];
+					if (distancia)
+					{
+						TempA = new char[distancia];
 
-                        ReagMin.read(TempA, distancia);
+						ReagMin.read(TempA, distancia);
 
-                        ReagT.write(TempA, distancia);
+						ReagT.write(TempA, distancia);
 
-                        delete[] TempA;
-                    }
-                }
+						delete[] TempA;
+					}
+				}
 
-                ReagMin.seekg(sizeof(char) + sizeof(float), std::ios::cur);
-                int LugarParado = ReagMin.tellg();
-                ReagMin.seekg(0, std::ios::end);
-                int FimReagMin = ReagMin.tellg();
-                ReagMin.seekg(LugarParado, std::ios::beg);
+				ReagMin.seekg(sizeof(char) + sizeof(float), std::ios::cur);
+				int LugarParado = ReagMin.tellg();
+				ReagMin.seekg(0, std::ios::end);
+				int FimReagMin = ReagMin.tellg();
+				ReagMin.seekg(LugarParado, std::ios::beg);
 
-                if (LugarParado < FimReagMin)
-                {
-                    std::fstream ReagT(ArqD.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
+				if (LugarParado < FimReagMin)
+				{
+					std::fstream ReagT(ArqD.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
 
-                    if (ReagT.bad() || !ReagT.is_open())
-                    {
-                        std::cout << "Problema ao abrir o arquivo!!\tLinha: 371";
-                        return false;
-                    }
+					if (ReagT.bad() || !ReagT.is_open())
+					{
+						std::cout << "Problema ao abrir o arquivo!!\tLinha: 371";
+						return false;
+					}
 
-                    bool NewUsado = false;
-                    char a = 'a';
-                    char* TempA = &a;
+					bool NewUsado = false;
+					char a = 'a';
+					char* TempA = &a;
 
-                    if (FimReagMin - LugarParado > 100)
-                    {
-                        TempA = new char[100];
-                        NewUsado = true;
-                    }
+					if (FimReagMin - LugarParado > 100)
+					{
+						TempA = new char[100];
+						NewUsado = true;
+					}
 
-                    while (FimReagMin - ReagMin.tellg() > 100)
-                    {
-                        ReagMin.read(TempA, 100);
+					while (FimReagMin - ReagMin.tellg() > 100)
+					{
+						ReagMin.read(TempA, 100);
 
-                        ReagT.write(TempA, 100);
-                    }
+						ReagT.write(TempA, 100);
+					}
 
-                    if (NewUsado)
-                    {
-                        delete[] TempA;
-                    }
+					if (NewUsado)
+					{
+						delete[] TempA;
+					}
 
-                    int distancia = FimReagMin - ReagMin.tellg();
+					int distancia = FimReagMin - ReagMin.tellg();
 
-                    if (distancia)
-                    {
-                        TempA = new char[distancia];
+					if (distancia)
+					{
+						TempA = new char[distancia];
 
-                        ReagMin.read(TempA, distancia);
+						ReagMin.read(TempA, distancia);
 
-                        ReagT.write(TempA, distancia);
+						ReagT.write(TempA, distancia);
 
-                        delete[] TempA;
-                    }
-                }
-
-                ReagMin.close();
-
-                ReagMin.open(ArqMi, std::ios::out | std::ios::trunc | std::ios::binary);
-
-                ReagMin.close();
-
-                if (LugarMin > 1)
-                    WriteAntes(ArqMi);
-
-                if (LugarParado < FimReagMin)
-                    WriteDepois(ArqMi);
-            }
-
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-
-        return false;
-    }
-
-    void ChecarValidade()
-    {
-        std::ifstream Reag(Arq.c_str(), std::ios::in | std::ios::binary);
-        std::fstream ReagV(ArqV.c_str(), std::ios::out | std::ios::in | std::ios::trunc | std::ios::binary);
+						delete[] TempA;
+					}
+				}
+
+				ReagMin.close();
+
+				ReagMin.open(ArqMi, std::ios::out | std::ios::trunc | std::ios::binary);
+
+				ReagMin.close();
+
+				if (LugarMin > 1)
+					WriteAntes(ArqMi);
+
+				if (LugarParado < FimReagMin)
+					WriteDepois(ArqMi);
+			}
+
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+
+		return false;
+	}
+
+	void ChecarValidade()
+	{
+		std::ifstream Reag(Arq.c_str(), std::ios::in | std::ios::binary);
+		std::fstream ReagV(ArqV.c_str(), std::ios::out | std::ios::in | std::ios::trunc | std::ios::binary);
 
-        while (Reag.good())
-        {
-            char Marca = 0;
+		while (Reag.good())
+		{
+			char Marca = 0;
 
-            Reag.read(&Marca, sizeof(char));
+			Reag.read(&Marca, sizeof(char));
 
-            if (Marca != -1)
-            {
-                unsigned int LocalAtual = Reag.tellg();
+			if (Marca != -1)
+			{
+				unsigned int LocalAtual = Reag.tellg();
 
-                Reag.seekg(0, std::ios::end);
-                unsigned int Fim = Reag.tellg();
+				Reag.seekg(0, std::ios::end);
+				unsigned int Fim = Reag.tellg();
 
-                if (LocalAtual < Fim)//para não parar quando chegar ao fim do arquivo
-                {
-                    std::cout << "Problema ao ler o arquivo!!\tLinha: 452\n";
-                }
+				if (LocalAtual < Fim)//para não parar quando chegar ao fim do arquivo
+				{
+					std::cout << "Problema ao ler o arquivo!!\tLinha: 452\n";
+				}
 
-                break;
-            }
+				break;
+			}
 
-            unsigned int ComecoReag = Reag.tellg();
+			unsigned int ComecoReag = Reag.tellg();
 
-            unsigned int NomeSize;
-            Reag.read((char*)&NomeSize, sizeof(unsigned int));
+			unsigned int NomeSize;
+			Reag.read((char*)&NomeSize, sizeof(unsigned int));
 
-            Reag.seekg(NomeSize + (sizeof(float) * 2), std::ios::cur);
+			Reag.seekg(NomeSize + (sizeof(float) * 2), std::ios::cur);
 
-            int dia, mes, ano, Alerta;
+			int dia, mes, ano, Alerta;
 
-            Reag.read((char*)&dia, sizeof(int));
-            Reag.read((char*)&mes, sizeof(int));
-            Reag.read((char*)&ano, sizeof(int));
-            Reag.read((char*)&Alerta, sizeof(int));
+			Reag.read((char*)&dia, sizeof(int));
+			Reag.read((char*)&mes, sizeof(int));
+			Reag.read((char*)&ano, sizeof(int));
+			Reag.read((char*)&Alerta, sizeof(int));
 
-            time_t RawTime;
-            time(&RawTime);
-            tm Tempo;
-            localtime_s(&Tempo, &RawTime);
+			time_t RawTime;
+			time(&RawTime);
+			tm Tempo;
+			localtime_s(&Tempo, &RawTime);
 
-            if (ano == Tempo.tm_year + 1900)
-            {
-                if (mes == Tempo.tm_mon + 1)
-                {
-                    if (dia <= Tempo.tm_mday)
-                    {
-                        Marca = -1;
-                        ReagV.write((char*)&Marca, sizeof(char));
+			if (ano == Tempo.tm_year + 1900)
+			{
+				if (mes == Tempo.tm_mon + 1)
+				{
+					if (dia <= Tempo.tm_mday)
+					{
+						Marca = -1;
+						ReagV.write((char*)&Marca, sizeof(char));
 
-                        ReagV.write((char*)&ComecoReag, sizeof(unsigned int));
-                        ReagV.write((char*)&Alerta, sizeof(int));
-                    }
-                }
-                else if (mes < Tempo.tm_mon + 1)
-                {
-                    Marca = -1;
-                    ReagV.write((char*)&Marca, sizeof(char));
+						ReagV.write((char*)&ComecoReag, sizeof(unsigned int));
+						ReagV.write((char*)&Alerta, sizeof(int));
+					}
+				}
+				else if (mes < Tempo.tm_mon + 1)
+				{
+					Marca = -1;
+					ReagV.write((char*)&Marca, sizeof(char));
 
-                    ReagV.write((char*)&ComecoReag, sizeof(unsigned int));
-                    ReagV.write((char*)&Alerta, sizeof(int));
-                }
-            }
-            else if (ano < Tempo.tm_year + 1900)
-            {
-                Marca = -1;
-                ReagV.write((char*)&Marca, sizeof(char));
+					ReagV.write((char*)&ComecoReag, sizeof(unsigned int));
+					ReagV.write((char*)&Alerta, sizeof(int));
+				}
+			}
+			else if (ano < Tempo.tm_year + 1900)
+			{
+				Marca = -1;
+				ReagV.write((char*)&Marca, sizeof(char));
 
-                ReagV.write((char*)&ComecoReag, sizeof(unsigned int));
-                ReagV.write((char*)&Alerta, sizeof(int));
-            }
-        }
-        Reag.close();
-    }
+				ReagV.write((char*)&ComecoReag, sizeof(unsigned int));
+				ReagV.write((char*)&Alerta, sizeof(int));
+			}
+		}
+		Reag.close();
+	}
 
-    bool TrocarPeso(std::string Nome, float NovoPeso, float NovoPesoC)
-    {
-        if (NovoPeso >= NovoPesoC)
-        {
-            int LocalReag = EscolherReag(Nome);
+	bool TrocarPeso(std::string Nome, float NovoPeso, float NovoPesoC)
+	{
+		if (NovoPeso >= NovoPesoC)
+		{
+			int LocalReag = EscolherReag(Nome);
 
-            if (LocalReag > -1)
-            {
-                GetAntes(Arq, LocalReag - 1);
+			if (LocalReag > -1)
+			{
+				GetAntes(Arq, LocalReag - 1);
 
-                //pega as informações excluido os pesos
+				//pega as informações excluido os pesos
 
-                std::fstream Reag(Arq.c_str(), std::ios::in | std::ios::binary); //abre o arquivo
+				std::fstream Reag(Arq.c_str(), std::ios::in | std::ios::binary); //abre o arquivo
 
-                if (!Reag.is_open() || Reag.bad())
-                {
-                    std::cout << "Problema ao ler o arquivo!!\tLinha: 373\n";
-                    return false;
-                }
+				if (!Reag.is_open() || Reag.bad())
+				{
+					std::cout << "Problema ao ler o arquivo!!\tLinha: 373\n";
+					return false;
+				}
 
-                Reag.seekg(LocalReag - 1, std::ios::beg);
+				Reag.seekg(LocalReag - 1, std::ios::beg);
 
-                char Marca = 0;
+				char Marca = 0;
 
-                Reag.read(&Marca, sizeof(char));
+				Reag.read(&Marca, sizeof(char));
 
-                if (Marca != -1)
-                {
-                    std::cout << "problema ao ler o arquivo!!\tLinha: 376\n";
-                }
+				if (Marca != -1)
+				{
+					std::cout << "problema ao ler o arquivo!!\tLinha: 376\n";
+				}
 
-                unsigned int NomeSize;
+				unsigned int NomeSize;
 
-                Reag.read((char*)&NomeSize, sizeof(unsigned int));
+				Reag.read((char*)&NomeSize, sizeof(unsigned int));
 
-                char* Nome = new char[NomeSize];
+				char* Nome = new char[NomeSize];
 
-                Reag.read(Nome, NomeSize);
+				Reag.read(Nome, NomeSize);
 
-                float PesoAntigo;
+				float PesoAntigo;
 
-                Reag.read((char*)&PesoAntigo, sizeof(float));
+				Reag.read((char*)&PesoAntigo, sizeof(float));
 
-                Reag.seekg((sizeof(float)), std::ios::cur);
+				Reag.seekg((sizeof(float)), std::ios::cur);
 
-                char* Outros = new char[sizeof(int) * 4];
+				char* Outros = new char[sizeof(int) * 4];
 
-                Reag.read(Outros, (sizeof(int) * 4));
+				Reag.read(Outros, (sizeof(int) * 4));
 
-                Reag.close();
+				Reag.close();
 
-                GetDepois(Arq, LocalReag - 1);
+				GetDepois(Arq, LocalReag - 1);
 
-                WriteAntes(Arq);
+				WriteAntes(Arq);
 
-                Reag.open(Arq.c_str(), std::ios::out | std::ios::app | std::ios::binary);
+				Reag.open(Arq.c_str(), std::ios::out | std::ios::app | std::ios::binary);
 
-                Reag.seekg(0, std::ios::end);
+				Reag.seekg(0, std::ios::end);
 
-                Reag.write(&Marca, sizeof(char));
-                Reag.write((char*)&NomeSize, sizeof(unsigned int));
-                Reag.write(Nome, NomeSize);
-                Reag.write((char*)&NovoPeso, sizeof(float));
-                Reag.write((char*)&NovoPesoC, sizeof(float));
-                Reag.write(Outros, sizeof(int) * 4);
+				Reag.write(&Marca, sizeof(char));
+				Reag.write((char*)&NomeSize, sizeof(unsigned int));
+				Reag.write(Nome, NomeSize);
+				Reag.write((char*)&NovoPeso, sizeof(float));
+				Reag.write((char*)&NovoPesoC, sizeof(float));
+				Reag.write(Outros, sizeof(int) * 4);
 
-                PesoSalvo += NovoPeso - PesoAntigo;
+				PesoSalvo += NovoPeso - PesoAntigo;
 
-                delete[] Nome;
-                delete[] Outros;
+				delete[] Nome;
+				delete[] Outros;
 
-                Reag.close();
+				Reag.close();
 
-                WriteDepois(Arq);
+				WriteDepois(Arq);
 
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-        else
-        {
-            std::cout << "informações invalidas!!\n";
-        }
-    }
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		else
+		{
+			std::cout << "informações invalidas!!\n";
+		}
+	}
 
-    void TrocarPesoMin(std::string Nome, float NovoPesoMin)
-    {
-        std::fstream Reag(Arq, std::ios::in | std::ios::binary);
-        std::fstream ReagMin(ArqMi, std::ios::in | std::ios::binary);
+	void TrocarPesoMin(std::string Nome, float NovoPesoMin)
+	{
+		std::fstream Reag(Arq, std::ios::in | std::ios::binary);
+		std::fstream ReagMin(ArqMi, std::ios::in | std::ios::binary);
 
-        int Lugar = EscolherReag(Nome);
-        int LugarMin = 0;
+		int Lugar = EscolherReag(Nome);
+		int LugarMin = 0;
 
-        if (Lugar > -1)
-        {
-            while (Reag.tellg() < Lugar - 1)
-            {
-                char Marca = 0;
+		if (Lugar > -1)
+		{
+			while (Reag.tellg() < Lugar - 1)
+			{
+				char Marca = 0;
 
-                Reag.read(&Marca, sizeof(char));
+				Reag.read(&Marca, sizeof(char));
 
-                if (Marca != -1)
-                    std::cout << "Problema ao ler o arquivo\tLinha: 441\n";
+				if (Marca != -1)
+					std::cout << "Problema ao ler o arquivo\tLinha: 441\n";
 
-                LugarMin++;
-                unsigned int NomeSize;
-                Reag.read((char*)&NomeSize, sizeof(unsigned int));
-                Reag.seekg(NomeSize + (sizeof(float) * 2) + (sizeof(int) * 4), std::ios::cur);
-            }
+				LugarMin++;
+				unsigned int NomeSize;
+				Reag.read((char*)&NomeSize, sizeof(unsigned int));
+				Reag.seekg(NomeSize + (sizeof(float) * 2) + (sizeof(int) * 4), std::ios::cur);
+			}
 
-            LugarMin *= sizeof(char) + sizeof(float);
+			LugarMin *= sizeof(char) + sizeof(float);
 
-            if (LugarMin > 1)
-            {
-                std::fstream ReagT(ArqA.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
+			if (LugarMin > 1)
+			{
+				std::fstream ReagT(ArqA.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
 
-                if (ReagT.bad() || !ReagT.is_open())
-                {
-                    std::cout << "Problema ao abrir o arquivo!!\tLinha: 371";
-                    return;
-                }
+				if (ReagT.bad() || !ReagT.is_open())
+				{
+					std::cout << "Problema ao abrir o arquivo!!\tLinha: 371";
+					return;
+				}
 
-                bool NewUsado = false;
-                char a = 'a';
-                char* TempA = &a;
+				bool NewUsado = false;
+				char a = 'a';
+				char* TempA = &a;
 
-                if (LugarMin > 100)
-                {
-                    TempA = new char[100];
-                    NewUsado = true;
-                }
+				if (LugarMin > 100)
+				{
+					TempA = new char[100];
+					NewUsado = true;
+				}
 
-                while (LugarMin - ReagMin.tellg() > 100)
-                {
-                    ReagMin.read(TempA, 100);
+				while (LugarMin - ReagMin.tellg() > 100)
+				{
+					ReagMin.read(TempA, 100);
 
-                    ReagT.write(TempA, 100);
-                }
+					ReagT.write(TempA, 100);
+				}
 
-                if (NewUsado)
-                {
-                    delete[] TempA;
-                }
+				if (NewUsado)
+				{
+					delete[] TempA;
+				}
 
-                int distancia = LugarMin - ReagMin.tellg();
+				int distancia = LugarMin - ReagMin.tellg();
 
-                if (distancia)
-                {
-                    TempA = new char[distancia];
+				if (distancia)
+				{
+					TempA = new char[distancia];
 
-                    ReagMin.read(TempA, distancia);
+					ReagMin.read(TempA, distancia);
 
-                    ReagT.write(TempA, distancia);
+					ReagT.write(TempA, distancia);
 
-                    delete[] TempA;
-                }
-            }
+					delete[] TempA;
+				}
+			}
 
-            ReagMin.seekg(sizeof(char) + sizeof(float), std::ios::cur);
-            int LugarParado = ReagMin.tellg();
-            ReagMin.seekg(0, std::ios::end);
-            int FimReagMin = ReagMin.tellg();
-            ReagMin.seekg(LugarParado, std::ios::beg);
+			ReagMin.seekg(sizeof(char) + sizeof(float), std::ios::cur);
+			int LugarParado = ReagMin.tellg();
+			ReagMin.seekg(0, std::ios::end);
+			int FimReagMin = ReagMin.tellg();
+			ReagMin.seekg(LugarParado, std::ios::beg);
 
-            if (LugarParado < FimReagMin)
-            {
-                std::fstream ReagT(ArqD.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
+			if (LugarParado < FimReagMin)
+			{
+				std::fstream ReagT(ArqD.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
 
-                if (ReagT.bad() || !ReagT.is_open())
-                {
-                    std::cout << "Problema ao abrir o arquivo!!\tLinha: 371";
-                    return;
-                }
+				if (ReagT.bad() || !ReagT.is_open())
+				{
+					std::cout << "Problema ao abrir o arquivo!!\tLinha: 371";
+					return;
+				}
 
-                bool NewUsado = false;
-                char a = 'a';
-                char* TempA = &a;
+				bool NewUsado = false;
+				char a = 'a';
+				char* TempA = &a;
 
-                if (FimReagMin - LugarParado > 100)
-                {
-                    TempA = new char[100];
-                    NewUsado = true;
-                }
+				if (FimReagMin - LugarParado > 100)
+				{
+					TempA = new char[100];
+					NewUsado = true;
+				}
 
-                while (FimReagMin - ReagMin.tellg() > 100)
-                {
-                    ReagMin.read(TempA, 100);
+				while (FimReagMin - ReagMin.tellg() > 100)
+				{
+					ReagMin.read(TempA, 100);
 
-                    ReagT.write(TempA, 100);
-                }
+					ReagT.write(TempA, 100);
+				}
 
-                if (NewUsado)
-                {
-                    delete[] TempA;
-                }
+				if (NewUsado)
+				{
+					delete[] TempA;
+				}
 
-                int distancia = FimReagMin - ReagMin.tellg();
+				int distancia = FimReagMin - ReagMin.tellg();
 
-                if (distancia)
-                {
-                    TempA = new char[distancia];
+				if (distancia)
+				{
+					TempA = new char[distancia];
 
-                    ReagMin.read(TempA, distancia);
+					ReagMin.read(TempA, distancia);
 
-                    ReagT.write(TempA, distancia);
+					ReagT.write(TempA, distancia);
 
-                    delete[] TempA;
-                }
-            }
+					delete[] TempA;
+				}
+			}
 
-            ReagMin.close();
+			ReagMin.close();
 
-            ReagMin.open(ArqMi, std::ios::out | std::ios::trunc | std::ios::binary);
+			ReagMin.open(ArqMi, std::ios::out | std::ios::trunc | std::ios::binary);
 
-            ReagMin.close();
+			ReagMin.close();
 
-            if (LugarMin > 1)
-                WriteAntes(ArqMi);
+			if (LugarMin > 1)
+				WriteAntes(ArqMi);
 
-            ReagMin.open(ArqMi, std::ios::out | std::ios::app | std::ios::binary);
+			ReagMin.open(ArqMi, std::ios::out | std::ios::app | std::ios::binary);
 
-            char Marca = -1;
-            ReagMin.write(&Marca, sizeof(char));
-            ReagMin.write((char*)&NovoPesoMin, sizeof(float));
+			char Marca = -1;
+			ReagMin.write(&Marca, sizeof(char));
+			ReagMin.write((char*)&NovoPesoMin, sizeof(float));
 
-            ReagMin.close();
+			ReagMin.close();
 
-            if (LugarParado < FimReagMin)
-                WriteDepois(ArqMi);
-        }
+			if (LugarParado < FimReagMin)
+				WriteDepois(ArqMi);
+		}
 
-        Reag.close();
-    }
+		Reag.close();
+	}
 
-    bool TrocarNome(std::string Nome, std::string NovoNome)
-    {
-        int LocalReag = EscolherReag(Nome);
+	bool TrocarNome(std::string Nome, std::string NovoNome)
+	{
+		int LocalReag = EscolherReag(Nome);
 
-        if (LocalReag > -1)
-        {
-            GetAntes(Arq, LocalReag - 1);
+		if (LocalReag > -1)
+		{
+			GetAntes(Arq, LocalReag - 1);
 
-            //pega as informações excluido os pesos
+			//pega as informações excluido os pesos
 
-            std::fstream Reag(Arq.c_str(), std::ios::in | std::ios::binary); //abre o arquivo
+			std::fstream Reag(Arq.c_str(), std::ios::in | std::ios::binary); //abre o arquivo
 
-            if (!Reag.is_open() || Reag.bad())
-            {
-                std::cout << "Problema ao ler o arquivo!!\tLinha: 373\n";
-                return false;
-            }
+			if (!Reag.is_open() || Reag.bad())
+			{
+				std::cout << "Problema ao ler o arquivo!!\tLinha: 373\n";
+				return false;
+			}
 
-            Reag.seekg(LocalReag - 1, std::ios::beg);
+			Reag.seekg(LocalReag - 1, std::ios::beg);
 
-            char Marca = 0;
+			char Marca = 0;
 
-            Reag.read(&Marca, sizeof(char));
+			Reag.read(&Marca, sizeof(char));
 
-            if (Marca != -1)
-            {
-                std::cout << "problema ao ler o arquivo!!\tLinha: 376\n";
-            }
+			if (Marca != -1)
+			{
+				std::cout << "problema ao ler o arquivo!!\tLinha: 376\n";
+			}
 
-            unsigned int NomeSize;
+			unsigned int NomeSize;
 
-            Reag.read((char*)&NomeSize, sizeof(unsigned int));
+			Reag.read((char*)&NomeSize, sizeof(unsigned int));
 
-            Reag.seekg(NomeSize, std::ios::cur);
+			Reag.seekg(NomeSize, std::ios::cur);
 
-            char* Outros = new char[(sizeof(float) * 2) + (sizeof(int) * 4)];
+			char* Outros = new char[(sizeof(float) * 2) + (sizeof(int) * 4)];
 
-            Reag.read(Outros, ((sizeof(float) * 2) + (sizeof(int) * 4)));
+			Reag.read(Outros, ((sizeof(float) * 2) + (sizeof(int) * 4)));
 
-            Reag.close();
+			Reag.close();
 
-            GetDepois(Arq, LocalReag - 1);
+			GetDepois(Arq, LocalReag - 1);
 
-            WriteAntes(Arq);
+			WriteAntes(Arq);
 
-            Reag.open(Arq.c_str(), std::ios::out | std::ios::app | std::ios::binary);
+			Reag.open(Arq.c_str(), std::ios::out | std::ios::app | std::ios::binary);
 
-            Reag.seekg(0, std::ios::end);
+			Reag.seekg(0, std::ios::end);
 
-            NomeSize = NovoNome.size();
+			NomeSize = NovoNome.size();
 
-            Reag.write(&Marca, sizeof(char));
-            Reag.write((char*)&NomeSize, sizeof(unsigned int));
-            Reag.write(NovoNome.c_str(), NomeSize);
-            Reag.write(Outros, ((sizeof(float) * 2) + (sizeof(int) * 4)));
+			Reag.write(&Marca, sizeof(char));
+			Reag.write((char*)&NomeSize, sizeof(unsigned int));
+			Reag.write(NovoNome.c_str(), NomeSize);
+			Reag.write(Outros, ((sizeof(float) * 2) + (sizeof(int) * 4)));
 
-            delete[] Outros;
-            Reag.close();
+			delete[] Outros;
+			Reag.close();
 
-            WriteDepois(Arq);
+			WriteDepois(Arq);
 
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
 
-    bool TrocarValidade(std::string Nome, int NovoDia, int NovoMes, int NovoAno)
-    {
-        if ((NovoDia > 0 && NovoDia < 32) && (NovoMes > 0 && NovoMes < 13))
-        {
-            int LocalReag = EscolherReag(Nome);
+	bool TrocarValidade(std::string Nome, int NovoDia, int NovoMes, int NovoAno)
+	{
+		if ((NovoDia > 0 && NovoDia < 32) && (NovoMes > 0 && NovoMes < 13))
+		{
+			int LocalReag = EscolherReag(Nome);
 
-            if (LocalReag > -1)
-            {
-                GetAntes(Arq, LocalReag - 1);
+			if (LocalReag > -1)
+			{
+				GetAntes(Arq, LocalReag - 1);
 
-                //pega as informações excluido os pesos
-                std::fstream Reag(Arq.c_str(), std::ios::in | std::ios::binary); //abre o arquivo
+				//pega as informações excluido os pesos
+				std::fstream Reag(Arq.c_str(), std::ios::in | std::ios::binary); //abre o arquivo
 
-                if (!Reag.is_open() || Reag.bad())
-                {
-                    std::cout << "Problema ao ler o arquivo!!\tLinha: 373\n";
-                    return false;
-                }
+				if (!Reag.is_open() || Reag.bad())
+				{
+					std::cout << "Problema ao ler o arquivo!!\tLinha: 373\n";
+					return false;
+				}
 
-                Reag.seekg(LocalReag - 1, std::ios::beg);
+				Reag.seekg(LocalReag - 1, std::ios::beg);
 
-                char Marca = 0;
+				char Marca = 0;
 
-                Reag.read(&Marca, sizeof(char));
+				Reag.read(&Marca, sizeof(char));
 
-                if (Marca != -1)
-                {
-                    std::cout << "problema ao ler o arquivo!!\tLinha: 376\n";
-                }
+				if (Marca != -1)
+				{
+					std::cout << "problema ao ler o arquivo!!\tLinha: 376\n";
+				}
 
-                unsigned int NomeSize;
+				unsigned int NomeSize;
 
-                Reag.read((char*)&NomeSize, sizeof(unsigned int));
+				Reag.read((char*)&NomeSize, sizeof(unsigned int));
 
-                char* Nome = new char[NomeSize];
+				char* Nome = new char[NomeSize];
 
-                Reag.read(Nome, NomeSize);
+				Reag.read(Nome, NomeSize);
 
-                char* Outros = new char[(sizeof(float) * 2) + sizeof(int)];
+				char* Outros = new char[(sizeof(float) * 2) + sizeof(int)];
 
-                Reag.read(Outros, (sizeof(float) * 2));
+				Reag.read(Outros, (sizeof(float) * 2));
 
-                Reag.seekg(sizeof(int) * 3, std::ios::cur);
+				Reag.seekg(sizeof(int) * 3, std::ios::cur);
 
-                Reag.read((Outros + (sizeof(float) * 2)), sizeof(int));
+				Reag.read((Outros + (sizeof(float) * 2)), sizeof(int));
 
-                Reag.close();
+				Reag.close();
 
-                GetDepois(Arq, LocalReag - 1);
+				GetDepois(Arq, LocalReag - 1);
 
-                WriteAntes(Arq);
+				WriteAntes(Arq);
 
-                Reag.open(Arq.c_str(), std::ios::out | std::ios::app | std::ios::binary);
+				Reag.open(Arq.c_str(), std::ios::out | std::ios::app | std::ios::binary);
 
-                Reag.seekg(0, std::ios::end);
+				Reag.seekg(0, std::ios::end);
 
-                Reag.write(&Marca, sizeof(char));
-                Reag.write((char*)&NomeSize, sizeof(unsigned int));
-                Reag.write(Nome, NomeSize);
-                Reag.write(Outros, sizeof(float) * 2);
-                Reag.write((char*)&NovoDia, sizeof(int));
-                Reag.write((char*)&NovoMes, sizeof(int));
-                Reag.write((char*)&NovoAno, sizeof(int));
-                Reag.write((Outros + (sizeof(float) * 2)), sizeof(int));
+				Reag.write(&Marca, sizeof(char));
+				Reag.write((char*)&NomeSize, sizeof(unsigned int));
+				Reag.write(Nome, NomeSize);
+				Reag.write(Outros, sizeof(float) * 2);
+				Reag.write((char*)&NovoDia, sizeof(int));
+				Reag.write((char*)&NovoMes, sizeof(int));
+				Reag.write((char*)&NovoAno, sizeof(int));
+				Reag.write((Outros + (sizeof(float) * 2)), sizeof(int));
 
-                delete[] Nome;
-                delete[] Outros;
+				delete[] Nome;
+				delete[] Outros;
 
-                Reag.close();
+				Reag.close();
 
-                WriteDepois(Arq);
+				WriteDepois(Arq);
 
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-        else
-        {
-            std::cout << "informações invalidas!!\n";
-        }
-    }
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		else
+		{
+			std::cout << "informações invalidas!!\n";
+		}
+	}
 
-    bool TrocarAlerta(std::string Nome, int NovoAlerta)
-    {
-        if (NovoAlerta <= NumeroAlertas && NovoAlerta >= 0)
-        {
-            int LocalReag = EscolherReag(Nome);
+	bool TrocarAlerta(std::string Nome, int NovoAlerta)
+	{
+		if (NovoAlerta <= NumeroAlertas && NovoAlerta >= 0)
+		{
+			int LocalReag = EscolherReag(Nome);
 
-            if (LocalReag > -1)
-            {
-                GetAntes(Arq, LocalReag - 1);
+			if (LocalReag > -1)
+			{
+				GetAntes(Arq, LocalReag - 1);
 
-                std::fstream Reag(Arq.c_str(), std::ios::in | std::ios::binary); //abre o arquivo
+				std::fstream Reag(Arq.c_str(), std::ios::in | std::ios::binary); //abre o arquivo
 
-                if (!Reag.is_open() || Reag.bad())
-                {
-                    std::cout << "Problema ao ler o arquivo!!\tLinha: 373\n";
-                    return false;
-                }
+				if (!Reag.is_open() || Reag.bad())
+				{
+					std::cout << "Problema ao ler o arquivo!!\tLinha: 373\n";
+					return false;
+				}
 
-                Reag.seekg(LocalReag - 1, std::ios::beg);
+				Reag.seekg(LocalReag - 1, std::ios::beg);
 
-                char Marca = 0;
+				char Marca = 0;
 
-                Reag.read(&Marca, sizeof(char));
+				Reag.read(&Marca, sizeof(char));
 
-                if (Marca != -1)
-                {
-                    std::cout << "problema ao ler o arquivo!!\tLinha: 376\n";
-                }
+				if (Marca != -1)
+				{
+					std::cout << "problema ao ler o arquivo!!\tLinha: 376\n";
+				}
 
-                unsigned int NomeSize;
+				unsigned int NomeSize;
 
-                Reag.read((char*)&NomeSize, sizeof(unsigned int));
+				Reag.read((char*)&NomeSize, sizeof(unsigned int));
 
-                char* Nome = new char[NomeSize];
+				char* Nome = new char[NomeSize];
 
-                Reag.read(Nome, NomeSize);
+				Reag.read(Nome, NomeSize);
 
-                char* Outros = new char[(sizeof(float) * 2) + (sizeof(int) * 3)];
+				char* Outros = new char[(sizeof(float) * 2) + (sizeof(int) * 3)];
 
-                Reag.read(Outros, ((sizeof(float) * 2) + (sizeof(int) * 3)));
+				Reag.read(Outros, ((sizeof(float) * 2) + (sizeof(int) * 3)));
 
-                Reag.close();
+				Reag.close();
 
-                GetDepois(Arq, LocalReag - 1);
+				GetDepois(Arq, LocalReag - 1);
 
-                WriteAntes(Arq);
+				WriteAntes(Arq);
 
-                Reag.open(Arq.c_str(), std::ios::out | std::ios::app | std::ios::binary);
+				Reag.open(Arq.c_str(), std::ios::out | std::ios::app | std::ios::binary);
 
-                Reag.seekg(0, std::ios::end);
+				Reag.seekg(0, std::ios::end);
 
-                Reag.write(&Marca, sizeof(char));
-                Reag.write((char*)&NomeSize, sizeof(unsigned int));
-                Reag.write(Nome, NomeSize);
-                Reag.write(Outros, (sizeof(float) * 2) + (sizeof(int) * 3));
-                Reag.write((char*)&NovoAlerta, sizeof(int));
+				Reag.write(&Marca, sizeof(char));
+				Reag.write((char*)&NomeSize, sizeof(unsigned int));
+				Reag.write(Nome, NomeSize);
+				Reag.write(Outros, (sizeof(float) * 2) + (sizeof(int) * 3));
+				Reag.write((char*)&NovoAlerta, sizeof(int));
 
-                delete[] Nome;
-                delete[] Outros;
+				delete[] Nome;
+				delete[] Outros;
 
-                Reag.close();
+				Reag.close();
 
-                WriteDepois(Arq);
+				WriteDepois(Arq);
 
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-    }
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+	}
 
-    void VerificarPeso()
-    {
-        if (PesoSalvo != PesoAtual)
-        {
-            std::fstream ReagH(ArqH.c_str(), std::ios::out | std::ios::app | std::ios::binary);
+	void VerificarPeso()
+	{
+		if (PesoSalvo != PesoAtual)
+		{
+			std::fstream ReagH(ArqH.c_str(), std::ios::out | std::ios::app | std::ios::binary);
 
-            char Marca = -1;
-            ReagH.write(&Marca, sizeof(char));
-            ReagH.write((char*)&PesoAtual, sizeof(float));
+			char Marca = -1;
+			ReagH.write(&Marca, sizeof(char));
+			ReagH.write((char*)&PesoAtual, sizeof(float));
 
-            PesoSalvo = PesoAtual;
-        }
-    }
+			PesoSalvo = PesoAtual;
+		}
+	}
 
-    void SalvarAlteração()
-    {
-        std::fstream Reag(Arq.c_str(), std::ios::in | std::ios::binary);
-        std::fstream ReagH(ArqH.c_str(), std::ios::in | std::ios::binary);
-        std::fstream ReagA(ArqM.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
+	void SalvarAlteração()
+	{
+		std::fstream Reag(Arq.c_str(), std::ios::in | std::ios::binary);
+		std::fstream ReagH(ArqH.c_str(), std::ios::in | std::ios::binary);
+		std::fstream ReagA(ArqM.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
 
-        if (Reag.bad() || !Reag.is_open())
-            std::cout << "Problema ao abrir o arquivo!!!\tLinha: 645\n";
+		if (Reag.bad() || !Reag.is_open())
+			std::cout << "Problema ao abrir o arquivo!!!\tLinha: 645\n";
 
-        if (ReagH.bad() || !ReagH.is_open())
-            std::cout << "Problema ao abrir o arquivo!!!\tLinha: 648\n";
+		if (ReagH.bad() || !ReagH.is_open())
+			std::cout << "Problema ao abrir o arquivo!!!\tLinha: 648\n";
 
-        if (ReagA.bad() || !ReagA.is_open())
-            std::cout << "Problema ao abrir o arquivo!!!\tLinha: 650\n";
+		if (ReagA.bad() || !ReagA.is_open())
+			std::cout << "Problema ao abrir o arquivo!!!\tLinha: 650\n";
 
-        unsigned int ReagHEnd;
+		unsigned int ReagHEnd;
 
-        ReagH.seekg(0, std::ios::end);
+		ReagH.seekg(0, std::ios::end);
 
-        ReagHEnd = ReagH.tellg();
+		ReagHEnd = ReagH.tellg();
 
-        ReagH.seekg(0, std::ios::beg);
+		ReagH.seekg(0, std::ios::beg);
 
-        float PesoAnt = -1;
+		float PesoAnt = -1;
 
-        ReagA.close();
+		ReagA.close();
 
-        while (ReagH.tellg() < ReagHEnd)
-        {
-            char Marca;
-            ReagH.read(&Marca, sizeof(char));
+		while (ReagH.tellg() < ReagHEnd)
+		{
+			char Marca;
+			ReagH.read(&Marca, sizeof(char));
 
-            float a = 100;
+			float a = 100;
 
-            if (Marca != -1)
-                std::cout << "Problemas ao ler o arquivo!!\tLinha: 657\n";
+			if (Marca != -1)
+				std::cout << "Problemas ao ler o arquivo!!\tLinha: 988\n";
 
-            if (PesoAnt > -1)
-            {
-                ReagA.open(ArqM, std::ios::out | std::ios::app | std::ios::in | std::ios::binary);
-                if (ReagA.bad() || !ReagA.is_open())
-                    std::cout << "Problema ao abrir o arquivo!!!\tLinha: 994\n";
+			if (PesoAnt > -1)
+			{
+				ReagA.open(ArqM, std::ios::out | std::ios::app | std::ios::in | std::ios::binary);
+				if (ReagA.bad() || !ReagA.is_open())
+					std::cout << "Problema ao abrir o arquivo!!!\tLinha: 994\n";
 
-                float Diferença, PesoVer;
+				float Diferença, PesoVer;
 
-                ReagH.read((char*)&PesoVer, sizeof(float));
+				ReagH.read((char*)&PesoVer, sizeof(float));
 
-                Diferença = PesoVer - PesoAnt;
+				Diferença = PesoVer - PesoAnt;
 
-                if (Diferença != 0)
-                {
-                    Reag.seekg(0, std::ios::end);
-                    unsigned int ReagFim = Reag.tellg();
-                    Reag.seekg(0, std::ios::beg);
+				if (Diferença != 0)
+				{
+					Reag.seekg(0, std::ios::end);
+					unsigned int ReagFim = Reag.tellg();
+					Reag.seekg(0, std::ios::beg);
 
-                    ReagA.seekg(0, std::ios::end);
-                    unsigned int ReagAFim = ReagA.tellg();
+					ReagA.seekg(0, std::ios::end);
+					unsigned int ReagAFim = ReagA.tellg();
 
-                    bool VariosCompativeis = false;
-                    bool Compativel = false;
+					bool VariosCompativeis = false;
+					bool Compativel = false;
 
-                    Marca = -1;
-                    ReagA.write(&Marca, sizeof(char));
+					Marca = -1;
+					ReagA.write(&Marca, sizeof(char));
 
-                    ReagA.write((char*)&Diferença, sizeof(float));
+					ReagA.write((char*)&Diferença, sizeof(float));
 
-                    int AlertaM = 0;
+					int AlertaM = 0;
 
-                    //tudo só vai escrever se a diferença for negativa pois apnas escreve informaçoes relevantes para retiradas.
-                    {
-                        while (Reag.tellg() < ReagFim && Diferença < 0)
-                        {
-                            unsigned int InicioReag, NomeSize;
-                            int Alerta;
-                            float PesoReag;
+					//tudo só vai escrever se a diferença for negativa pois apnas escreve informaçoes relevantes para retiradas.
+					{
+						while (Reag.tellg() < ReagFim && Diferença < 0)
+						{
+							unsigned int InicioReag, NomeSize;
+							int Alerta;
+							float PesoReag;
 
-                            Reag.read(&Marca, sizeof(char));
+							Reag.read(&Marca, sizeof(char));
 
-                            if (Marca != -1)
-                                std::cout << "Problemas ao ler o arquivo!!\tLinha: 685\n";
+							if (Marca != -1)
+								std::cout << "Problemas ao ler o arquivo!!\tLinha: 685\n";
 
-                            InicioReag = Reag.tellg();
+							InicioReag = Reag.tellg();
 
-                            Reag.read((char*)&NomeSize, sizeof(unsigned int));
+							Reag.read((char*)&NomeSize, sizeof(unsigned int));
 
-                            Reag.seekg(NomeSize, std::ios::cur);
+							Reag.seekg(NomeSize, std::ios::cur);
 
-                            Reag.read((char*)&PesoReag, sizeof(float));
+							Reag.read((char*)&PesoReag, sizeof(float));
 
-                            Reag.seekg(sizeof(float) + (sizeof(int) * 3), std::ios::cur);
+							Reag.seekg(sizeof(float) + (sizeof(int) * 3), std::ios::cur);
 
-                            Reag.read((char*)&Alerta, sizeof(int));
+							Reag.read((char*)&Alerta, sizeof(int));
 
-                            if (Alerta > AlertaM)
-                                AlertaM = Alerta;
+							if (Alerta > AlertaM)
+								AlertaM = Alerta;
 
-                            if ((-Diferença >= PesoReag - DesvioAceitavel) && (-Diferença <= PesoReag + DesvioAceitavel))
-                            {
-                                if (VariosCompativeis)
-                                {
-                                    Marca = -2;
+							if ((-Diferença >= PesoReag - DesvioAceitavel) && (-Diferença <= PesoReag + DesvioAceitavel))
+							{
+								if (VariosCompativeis)
+								{
+									Marca = -2;
 
-                                    ReagA.write(&Marca, sizeof(char));
-                                }
+									ReagA.write(&Marca, sizeof(char));
+								}
 
-                                ReagA.write((char*)&InicioReag, sizeof(unsigned int));
+								ReagA.write((char*)&InicioReag, sizeof(unsigned int));
 
-                                VariosCompativeis = true;
-                                Compativel = true;
-                            }
-                        }
+								VariosCompativeis = true;
+								Compativel = true;
+							}
+						}
 
-                        ReagA.close();
+						ReagA.close();
 
-                        ReagA.open(ArqM, std::ios::out | std::ios::app | std::ios::in | std::ios::binary);
+						ReagA.open(ArqM, std::ios::out | std::ios::app | std::ios::in | std::ios::binary);
 
-                        if (ReagA.bad() || !ReagA.is_open())
-                            std::cout << "Problema ao abrir o arquivo!!!\tLinha: 1070\n";
+						if (ReagA.bad() || !ReagA.is_open())
+							std::cout << "Problema ao abrir o arquivo!!!\tLinha: 1070\n";
 
-                        bool sinal = -1; //-1 inicializa, true - positivo, false = negativo
-                        bool AchouA = false;
-                        unsigned int InicioReag, ReagAParado;
+						bool sinal = -1; //-1 inicializa, true - positivo, false = negativo
+						bool AchouA = false;
+						unsigned int InicioReag, ReagAParado;
 
-                        ReagA.seekg(0, std::ios::beg);
+						ReagA.seekg(0, std::ios::beg);
 
-                        std::cout << ReagA.tellg() << '\n';
+						std::cout << ReagA.tellg() << '\n';
 
-                        while (ReagA.tellg() < ReagAFim && Diferença < 0)
-                        {
-                            int Alerta;
-                            float PesoReag;
+						while (ReagA.tellg() < ReagAFim && Diferença < 0)
+						{
+							int Alerta;
+							float PesoReag;
 
-                            std::cout << ReagA.tellg() << '\n';
+							std::cout << ReagA.tellg() << '\n';
 
-                            ReagA.read(&Marca, sizeof(char));
+							ReagA.read(&Marca, sizeof(char));
 
-                            if (Marca != -1)
-                                std::cout << "Problemas ao ler o arquivo!!\tLinha: 685\n";
+							if (Marca != -1)
+								std::cout << "Problemas ao ler o arquivo!!\tLinha: 685\n";
 
-                            if (Marca == -1)
-                            {
-                                AchouA = false;
-                                ReagA.read((char*)&PesoReag, sizeof(float));
+							if (Marca == -1)
+							{
+								AchouA = false;
+								ReagA.read((char*)&PesoReag, sizeof(float));
 
-                                if (PesoReag < 0)
-                                {
-                                    ReagA.read((char*)&InicioReag, sizeof(int));
+								if (PesoReag < 0)
+								{
+									ReagA.read((char*)&InicioReag, sizeof(int));
 
-                                    sinal = false;
-                                }
+									sinal = false;
+								}
 
-                                if (PesoReag > 0)
-                                    sinal = true;
+								if (PesoReag > 0)
+									sinal = true;
 
-                                ReagA.read(&Marca, sizeof(char));
+								ReagA.read(&Marca, sizeof(char));
 
-                                ReagA.seekg(-(long long)sizeof(char), std::ios::cur);
+								ReagA.seekg(-(long long)sizeof(char), std::ios::cur);
 
-                                if (Marca != -1 && Marca != -2 && sinal == false)
-                                {
-                                    ReagA.read((char*)&Alerta, sizeof(int));
-                                    
-                                    if(AlertaM < Alerta)
-                                        AlertaM = Alerta;
-                                }
+								if (Marca != -1 && Marca != -2 && sinal == false)
+								{
+									ReagA.read((char*)&Alerta, sizeof(int));
 
-                                if (((-Diferença >= PesoReag - DesvioAceitavel) && (-Diferença <= PesoReag + DesvioAceitavel)) && sinal == true)
-                                {
-                                    ReagAParado = ReagA.tellg();
+									if (AlertaM < Alerta)
+										AlertaM = Alerta;
+								}
 
-                                    if (VariosCompativeis)
-                                    {
-                                        Marca = -2;
+								if (((-Diferença >= PesoReag - DesvioAceitavel) && (-Diferença <= PesoReag + DesvioAceitavel)) && sinal == true)
+								{
+									ReagAParado = ReagA.tellg();
 
-                                        ReagA.write(&Marca, sizeof(char));
-                                    }
+									if (VariosCompativeis)
+									{
+										Marca = -2;
 
-                                    ReagA.write((char*)&InicioReag, sizeof(unsigned int));
+										ReagA.write(&Marca, sizeof(char));
+									}
 
-                                    VariosCompativeis = true;
-                                    AchouA = true;
-                                    Compativel = true;
+									ReagA.write((char*)&InicioReag, sizeof(unsigned int));
 
-                                    ReagA.seekg(ReagAParado, std::ios::beg);
-                                }
-                            }
-                            else if (Marca == -2 && AchouA)
-                            {
-                                ReagA.read((char*)&InicioReag, sizeof(int));
+									VariosCompativeis = true;
+									AchouA = true;
+									Compativel = true;
 
-                                Marca = -2;
-                                ReagA.write(&Marca, sizeof(char));
+									ReagA.seekg(ReagAParado, std::ios::beg);
+								}
+							}
+							else if (Marca == -2 && AchouA)
+							{
+								ReagA.read((char*)&InicioReag, sizeof(int));
 
-                                ReagA.write((char*)&InicioReag, sizeof(unsigned int));
-                                VariosCompativeis = true;
-                                Compativel = true;
+								Marca = -2;
+								ReagA.write(&Marca, sizeof(char));
 
-                                ReagA.read(&Marca, sizeof(char));
+								ReagA.write((char*)&InicioReag, sizeof(unsigned int));
+								VariosCompativeis = true;
+								Compativel = true;
 
-                                if (Marca == -1 || Marca == -2)
-                                    ReagA.seekg(-(long long)sizeof(char), std::ios::cur);
-                                else if (AlertaM < Marca)
-                                    AlertaM = Marca;
-                            }
-                        }
+								ReagA.read(&Marca, sizeof(char));
 
-                        if (Compativel)
-                            ReagA.write((char*)&AlertaM, sizeof(int));
+								if (Marca == -1 || Marca == -2)
+									ReagA.seekg(-(long long)sizeof(char), std::ios::cur);
+								else if (AlertaM < Marca)
+									AlertaM = Marca;
+							}
+						}
 
-                        ReagA.close();
+						if (Compativel)
+							ReagA.write((char*)&AlertaM, sizeof(int));
 
-                        if (!Compativel && Diferença < 0)
-                        {
-                            int Temp = -1;
-                            ReagA.write((char*)&Temp, sizeof(int));
-                        }
-                    }
+						ReagA.close();
 
-                    PesoAnt = PesoVer;
-                }
-            }
-            else
-            {
-                float PesoVer;
+						if (!Compativel && Diferença < 0)
+						{
+							int Temp = -1;
+							ReagA.write((char*)&Temp, sizeof(int));
+						}
+					}
 
-                ReagH.read((char*)&PesoVer, sizeof(float));
+					PesoAnt = PesoVer;
+				}
+			}
+			else
+			{
+				float PesoVer;
 
-                PesoAnt = PesoVer;
-            }
-        }
+				ReagH.read((char*)&PesoVer, sizeof(float));
 
-        Reag.close();
-        ReagH.close();
-        ReagA.close();
-    }
+				PesoAnt = PesoVer;
+			}
+		}
 
-    void ConfirmarAlteração()
-    {
-        std::fstream ReagH(ArqH, std::ios::in | std::ios::binary);
-        std::fstream ReagHA(ArqHA, std::ios::out | std::ios::app | std::ios::binary);
+		Reag.close();
+		ReagH.close();
+		ReagA.close();
+	}
 
+	void ConfirmarAlteração()
+	{
+		std::fstream ReagH(ArqH, std::ios::in | std::ios::binary);
+		std::fstream ReagHA(ArqHA, std::ios::out | std::ios::app | std::ios::binary);
 
-        if (ReagH.bad() || !ReagH.is_open())
-            std::cout << "Problema ao abrir o arquivo!!\tLinha: 783\n";
 
-        if (ReagHA.bad() || !ReagHA.is_open())
-            std::cout << "Problema ao abrir o arquivo!!\tLinha: 787\n";
+		if (ReagH.bad() || !ReagH.is_open())
+			std::cout << "Problema ao abrir o arquivo!!\tLinha: 783\n";
 
-        char a = 'a';
-        char* TempA = &a;
+		if (ReagHA.bad() || !ReagHA.is_open())
+			std::cout << "Problema ao abrir o arquivo!!\tLinha: 787\n";
 
-        ReagH.seekg(0, std::ios::end);
-        int Fim = ReagH.tellg();
-        ReagH.seekg(0, std::ios::beg);
+		char a = 'a';
+		char* TempA = &a;
 
-        if (Fim - ReagH.tellg() > 0)
-        {
-            bool NewUsado = false;
+		ReagH.seekg(0, std::ios::end);
+		int Fim = ReagH.tellg();
+		ReagH.seekg(0, std::ios::beg);
 
-            if (Fim - ReagH.tellg() > 100)
-            {
-                TempA = new char[100];
-                NewUsado = true;
-            }
+		if (Fim - ReagH.tellg() > 0)
+		{
+			bool NewUsado = false;
 
-            while (Fim - ReagH.tellg() > 100)
-            {
-                ReagH.read(TempA, 100);
+			if (Fim - ReagH.tellg() > 100)
+			{
+				TempA = new char[100];
+				NewUsado = true;
+			}
 
-                ReagHA.write(TempA, 100);
-            }
+			while (Fim - ReagH.tellg() > 100)
+			{
+				ReagH.read(TempA, 100);
 
-            if (NewUsado)
-            {
-                delete[] TempA;
-            }
+				ReagHA.write(TempA, 100);
+			}
 
-            int lugar = ReagH.tellg();
+			if (NewUsado)
+			{
+				delete[] TempA;
+			}
 
-            if (Fim - ReagH.tellg())
-            {
-                TempA = new char[Fim - lugar];
+			int lugar = ReagH.tellg();
 
-                ReagH.read(TempA, Fim - lugar);
+			if (Fim - ReagH.tellg())
+			{
+				TempA = new char[Fim - lugar];
 
-                ReagHA.write(TempA, Fim - lugar);
+				ReagH.read(TempA, Fim - lugar);
 
-                delete[] TempA;
-            }
+				ReagHA.write(TempA, Fim - lugar);
 
-            ReagH.close();
-            ReagHA.close();
+				delete[] TempA;
+			}
 
-            ReagH.open(ArqH, std::ios::out | std::ios::trunc | std::ios::binary);
+			ReagH.close();
+			ReagHA.close();
 
-            a = - 1;
+			ReagH.open(ArqH, std::ios::out | std::ios::trunc | std::ios::binary);
 
-            ReagH.write(&a, sizeof(char));
-            ReagH.write((char*)&PesoAtual, sizeof(float));
+			a = -1;
 
-            ReagH.close();
-        }
-    }
+			ReagH.write(&a, sizeof(char));
+			ReagH.write((char*)&PesoAtual, sizeof(float));
 
-    void LimparHistorico()
-    {
-        std::fstream ReagHA(ArqHA, std::ios::out | std::ios::trunc | std::ios::binary);
+			ReagH.close();
+		}
+	}
 
-        ReagHA.close();
-    }
+	void LimparHistorico()
+	{
+		std::fstream ReagHA(ArqHA, std::ios::out | std::ios::trunc | std::ios::binary);
 
-    void PrintMin(int Alerta)
-    {
-        std::fstream Reag(Arq, std::ios::in | std::ios::binary);
-        std::fstream ReagMin(ArqMi, std::ios::in | std::ios::binary);
+		ReagHA.close();
+	}
 
-        if (Reag.bad() || !Reag.is_open())
-            std::cout << "Problemas ao abrir o arquivo\tLinha: 860\n";
+	void PrintMin(int Alerta)
+	{
+		std::fstream Reag(Arq, std::ios::in | std::ios::binary);
+		std::fstream ReagMin(ArqMi, std::ios::in | std::ios::binary);
 
+		if (Reag.bad() || !Reag.is_open())
+			std::cout << "Problemas ao abrir o arquivo\tLinha: 860\n";
 
-        if (ReagMin.bad() || !ReagMin.is_open())
-            std::cout << "Problemas ao abrir o arquivo\tLinha: 860\n";
 
-        int ReagFim;
-        Reag.seekg(0, std::ios::end);
-        ReagFim = Reag.tellg();
-        Reag.seekg(0, std::ios::beg);
+		if (ReagMin.bad() || !ReagMin.is_open())
+			std::cout << "Problemas ao abrir o arquivo\tLinha: 860\n";
 
-        while (Reag.tellg() < ReagFim)
-        {
-            char Marca = 0;
+		int ReagFim;
+		Reag.seekg(0, std::ios::end);
+		ReagFim = Reag.tellg();
+		Reag.seekg(0, std::ios::beg);
 
-            Reag.read(&Marca, sizeof(char));
+		while (Reag.tellg() < ReagFim)
+		{
+			char Marca = 0;
 
-            if (Marca == -1)
-            {
-                unsigned int NomeSize;
-                float PesoR, PesoC;
-                int AlertaR;
+			Reag.read(&Marca, sizeof(char));
 
-                Reag.read((char*)&NomeSize, sizeof(unsigned int));
+			if (Marca == -1)
+			{
+				unsigned int NomeSize;
+				float PesoR, PesoC;
+				int AlertaR;
 
-                char* NomeReag = new char[NomeSize + 1];
+				Reag.read((char*)&NomeSize, sizeof(unsigned int));
 
-                Reag.read(NomeReag, NomeSize);
+				char* NomeReag = new char[NomeSize + 1];
 
-                NomeReag[NomeSize] = '\0';
+				Reag.read(NomeReag, NomeSize);
 
-                Reag.read((char*)&PesoR, sizeof(float));
-                Reag.read((char*)&PesoC, sizeof(float));
+				NomeReag[NomeSize] = '\0';
 
-                Reag.seekg((sizeof(int) * 3), std::ios::cur);
+				Reag.read((char*)&PesoR, sizeof(float));
+				Reag.read((char*)&PesoC, sizeof(float));
 
+				Reag.seekg((sizeof(int) * 3), std::ios::cur);
 
-                Reag.read((char*)&AlertaR, sizeof(int));
 
-                if (AlertaR >= Alerta)
-                {
-                    ReagMin.read(&Marca, sizeof(char));
+				Reag.read((char*)&AlertaR, sizeof(int));
 
-                    if (Marca != -1)
-                        std::cout << "Problemas ao ler o arquivo!!\tLinha: 904\n";
+				if (AlertaR >= Alerta)
+				{
+					ReagMin.read(&Marca, sizeof(char));
 
-                    float PesoMin;
+					if (Marca != -1)
+						std::cout << "Problemas ao ler o arquivo!!\tLinha: 904\n";
 
-                    ReagMin.read((char*)&PesoMin, sizeof(float));
+					float PesoMin;
 
-                    if (PesoR - PesoC <= PesoMin)
-                    {
-                        std::cout << "\n\n-------------------------\nO Reagente " << NomeReag << " esta com " << PesoR - PesoC << " g sobrando e precisa de no minimo: " << PesoMin << " g\n";
-                    }
-                }
-            }
-        }
-    }
+					ReagMin.read((char*)&PesoMin, sizeof(float));
 
-    void PrintNomes()
-    {
-        std::ifstream Reag(Arq.c_str(), std::ios::in | std::ios::binary); //abre o arquivo
+					if (PesoR - PesoC <= PesoMin)
+					{
+						std::cout << "\n\n-------------------------\nO Reagente " << NomeReag << " esta com " << PesoR - PesoC << " g sobrando e precisa de no minimo: " << PesoMin << " g\n";
+					}
+				}
+			}
+		}
+	}
 
-        if (!Reag.is_open() || Reag.bad())
-        {
-            std::cout << "Problem ao abrir o arquivo!!\n";
-            return;
-        }
+	void PrintNomes()
+	{
+		std::ifstream Reag(Arq.c_str(), std::ios::in | std::ios::binary); //abre o arquivo
 
-        std::cout << '\n';
-        
-        while (Reag.good())
-        {
-            char Marca = 0;
+		if (!Reag.is_open() || Reag.bad())
+		{
+			std::cout << "Problem ao abrir o arquivo!!\n";
+			return;
+		}
 
-            Reag.read(&Marca, sizeof(char));
+		std::cout << '\n';
 
-            if (Marca == -1)
-            {
-                unsigned int NomeSize;
+		while (Reag.good())
+		{
+			char Marca = 0;
 
-                Reag.read((char*)&NomeSize, sizeof(unsigned int));
+			Reag.read(&Marca, sizeof(char));
 
-                char* NomeReag = new char[NomeSize + 1];
+			if (Marca == -1)
+			{
+				unsigned int NomeSize;
 
-                for (int NomeInd = 0; NomeInd < NomeSize; NomeInd++)
-                {
-                    Reag.read((char*)&NomeReag[NomeInd], sizeof(char));
-                }
+				Reag.read((char*)&NomeSize, sizeof(unsigned int));
 
-                NomeReag[NomeSize] = '\0';
+				char* NomeReag = new char[NomeSize + 1];
 
-                std::cout << NomeReag << '\n';
+				for (int NomeInd = 0; NomeInd < NomeSize; NomeInd++)
+				{
+					Reag.read((char*)&NomeReag[NomeInd], sizeof(char));
+				}
 
-                delete[] NomeReag;
+				NomeReag[NomeSize] = '\0';
 
-                Reag.seekg((sizeof(float) * 2) + (sizeof(int) * 4), std::ios::cur);
-            }
-        }
-    } 
+				std::cout << NomeReag << '\n';
 
-    void PrintInfos()
-    {
-        std::ifstream Reag(Arq.c_str(), std::ios::in | std::ios::binary); //abre o arquivo
-        std::ifstream ReagMin(ArqMi.c_str(), std::ios::in | std::ios::binary); //abre o arquivo
+				delete[] NomeReag;
 
-        if (!Reag.is_open() || Reag.bad())
-        {
-            std::cout << "Problem ao abrir o arquivo!!\tLinha: 1123\n";
-            return;
-        }
-        
-        if (!ReagMin.is_open() || ReagMin.bad())
-        {
-            std::cout << "Problem ao abrir o arquivo!!\tLinha: 1129\n";
-            return;
-        }
+				Reag.seekg((sizeof(float) * 2) + (sizeof(int) * 4), std::ios::cur);
+			}
+		}
+	}
 
-        std::cout << '\n';
+	void PrintInfos()
+	{
+		std::ifstream Reag(Arq.c_str(), std::ios::in | std::ios::binary); //abre o arquivo
+		std::ifstream ReagMin(ArqMi.c_str(), std::ios::in | std::ios::binary); //abre o arquivo
 
-        while (Reag.good())
-        {
-            char Marca = 0;
+		if (!Reag.is_open() || Reag.bad())
+		{
+			std::cout << "Problem ao abrir o arquivo!!\tLinha: 1123\n";
+			return;
+		}
 
-            Reag.read(&Marca, sizeof(char));
+		if (!ReagMin.is_open() || ReagMin.bad())
+		{
+			std::cout << "Problem ao abrir o arquivo!!\tLinha: 1129\n";
+			return;
+		}
 
-            if (Marca == -1)
-            {
-                ReagMin.read(&Marca, sizeof(char));
+		std::cout << '\n';
 
-                if (Marca != -1)
-                    std::cout << "Problemas ao ler o arquivo!!!\tLinha: 1146\n";
+		while (Reag.good())
+		{
+			char Marca = 0;
 
-                unsigned int NomeSize;
+			Reag.read(&Marca, sizeof(char));
 
-                Reag.read((char*)&NomeSize, sizeof(unsigned int));
+			if (Marca == -1)
+			{
+				ReagMin.read(&Marca, sizeof(char));
 
-                char NomeReag;
+				if (Marca != -1)
+					std::cout << "Problemas ao ler o arquivo!!!\tLinha: 1146\n";
 
-                std::cout << '\n';
+				unsigned int NomeSize;
 
-                for (int NomeInd = 0; NomeInd < NomeSize; NomeInd++)
-                {
-                    Reag.read(&NomeReag, sizeof(char));
-                    std::cout << NomeReag;
-                }
+				Reag.read((char*)&NomeSize, sizeof(unsigned int));
 
-                std::cout << "\nPeso: ";
+				char NomeReag;
 
+				std::cout << '\n';
 
-                float Pesos;
-                Reag.read((char*)&Pesos, sizeof(float));
-                std::cout << "Total: " << std::setw(14) << std::left << Pesos << "Container: ";
+				for (int NomeInd = 0; NomeInd < NomeSize; NomeInd++)
+				{
+					Reag.read(&NomeReag, sizeof(char));
+					std::cout << NomeReag;
+				}
 
-                Reag.read((char*)&Pesos, sizeof(float));
-                std::cout << Pesos << "\nPeso Minimo: ";
+				std::cout << "\nPeso: ";
 
-                ReagMin.read((char*)&Pesos, sizeof(float));
-                std::cout << Pesos << "\nValidade: ";
 
-                int Inteiros;
-                Reag.read((char*)&Inteiros, sizeof(float));
-                std::cout << Inteiros << " / ";
+				float Pesos;
+				Reag.read((char*)&Pesos, sizeof(float));
+				std::cout << "Total: " << std::setw(14) << std::left << Pesos << "Container: ";
 
-                Reag.read((char*)&Inteiros, sizeof(float));
-                std::cout << Inteiros << " / ";
+				Reag.read((char*)&Pesos, sizeof(float));
+				std::cout << Pesos << "\nPeso Minimo: ";
 
-                Reag.read((char*)&Inteiros, sizeof(float));
-                std::cout << Inteiros << "\nAlerta: ";
+				ReagMin.read((char*)&Pesos, sizeof(float));
+				std::cout << Pesos << "\nValidade: ";
 
-                Reag.read((char*)&Inteiros, sizeof(float));
-                std::cout << Inteiros << '\n';
-            }
-        }
-    }
+				int Inteiros;
+				Reag.read((char*)&Inteiros, sizeof(float));
+				std::cout << Inteiros << " / ";
 
-    void PrintValidade(int Tipo)
-    {
-        std::fstream Reag(Arq.c_str(), std::ios::in | std::ios::binary);
-        std::fstream ReagV(ArqV.c_str(), std::ios::in | std::ios::binary);
+				Reag.read((char*)&Inteiros, sizeof(float));
+				std::cout << Inteiros << " / ";
 
-        ReagV.seekg(0, std::ios::beg);
+				Reag.read((char*)&Inteiros, sizeof(float));
+				std::cout << Inteiros << "\nAlerta: ";
 
-        while (ReagV.good())
-        {
-            char Marca = 0;
-            ReagV.read(&Marca, sizeof(char));
+				Reag.read((char*)&Inteiros, sizeof(float));
+				std::cout << Inteiros << '\n';
+			}
+		}
+	}
 
-            if (Marca == -1)
-            {
-                unsigned int ComecoReag;
-                int Alerta;
-                ReagV.read((char*)&ComecoReag, sizeof(unsigned int));
-                ReagV.read((char*)&Alerta, sizeof(int));
+	void PrintValidade(int Tipo)
+	{
+		std::fstream Reag(Arq.c_str(), std::ios::in | std::ios::binary);
+		std::fstream ReagV(ArqV.c_str(), std::ios::in | std::ios::binary);
 
-                if (Alerta >= Tipo)
-                {
-                    Reag.seekg(ComecoReag - 1, std::ios::beg);
+		ReagV.seekg(0, std::ios::beg);
 
-                    Reag.read(&Marca, sizeof(char));
+		while (ReagV.good())
+		{
+			char Marca = 0;
+			ReagV.read(&Marca, sizeof(char));
 
-                    if (Marca == -1)
-                    {
-                        unsigned int NomeSize;
-                        Reag.read((char*)&NomeSize, sizeof(unsigned int));
+			if (Marca == -1)
+			{
+				unsigned int ComecoReag;
+				int Alerta;
+				ReagV.read((char*)&ComecoReag, sizeof(unsigned int));
+				ReagV.read((char*)&Alerta, sizeof(int));
 
-                        std::cout << "\nNome: ";
+				if (Alerta >= Tipo)
+				{
+					Reag.seekg(ComecoReag - 1, std::ios::beg);
 
-                        char NomeChar;
+					Reag.read(&Marca, sizeof(char));
 
-                        for (int i = 0; i < NomeSize; i++)
-                        {
-                            Reag.read(&NomeChar, sizeof(char));
+					if (Marca == -1)
+					{
+						unsigned int NomeSize;
+						Reag.read((char*)&NomeSize, sizeof(unsigned int));
 
-                            std::cout << NomeChar;
-                        }
+						std::cout << "\nNome: ";
 
-                        float PesoT, PesoC, PesoR;
+						char NomeChar;
 
-                        Reag.read((char*)&PesoT, sizeof(float));
-                        Reag.read((char*)&PesoC, sizeof(float));
+						for (int i = 0; i < NomeSize; i++)
+						{
+							Reag.read(&NomeChar, sizeof(char));
 
-                        if (PesoC > 0)
-                        {
-                            PesoR = PesoT - PesoC;
-                        }
+							std::cout << NomeChar;
+						}
 
-                        std::cout << "\nPeso:";
-                        if (PesoC > 0)
-                        {
-                            std::cout << "Peso total: " << PesoT << "\nPeso do Reagente: " << PesoR << '\n';
-                        }
-                        else
-                        {
-                            std::cout << "Peso total: " << PesoT << '\n';
-                        }
-                        int data;
+						float PesoT, PesoC, PesoR;
 
-                        Reag.read((char*)&data, sizeof(int));
+						Reag.read((char*)&PesoT, sizeof(float));
+						Reag.read((char*)&PesoC, sizeof(float));
 
-                        std::cout << "Venceu dia: " << data << '/';
+						if (PesoC > 0)
+						{
+							PesoR = PesoT - PesoC;
+						}
 
-                        Reag.read((char*)&data, sizeof(int));
+						std::cout << "\nPeso:";
+						if (PesoC > 0)
+						{
+							std::cout << "Peso total: " << PesoT << "\nPeso do Reagente: " << PesoR << '\n';
+						}
+						else
+						{
+							std::cout << "Peso total: " << PesoT << '\n';
+						}
+						int data;
 
-                        std::cout << data << '/';
+						Reag.read((char*)&data, sizeof(int));
 
-                        Reag.read((char*)&data, sizeof(int));
+						std::cout << "Venceu dia: " << data << '/';
 
-                        std::cout << data << '\n';
-                    }
-                }
-            }
-        }
-    }
+						Reag.read((char*)&data, sizeof(int));
 
-    void PrintEspecifico(std::string Nome)
-    {
-        std::fstream Reag(Arq.c_str(), std::ios::in | std::ios::binary);
+						std::cout << data << '/';
 
-        if (!Reag.is_open() || Reag.bad())
-        {
-            std::cout << "Problema ao abrir o arquivo!!\tLinha: 190\n";
-        }
+						Reag.read((char*)&data, sizeof(int));
 
-        bool tem = false;
+						std::cout << data << '\n';
+					}
+				}
+			}
+		}
+	}
 
-        Reag.seekg(0, std::ios::end);
-        unsigned int End = Reag.tellg(); //salva onde é o final do arquivo
+	void PrintEspecifico(std::string Nome)
+	{
+		std::fstream Reag(Arq.c_str(), std::ios::in | std::ios::binary);
 
-        Reag.seekg(0, std::ios::beg);
+		if (!Reag.is_open() || Reag.bad())
+		{
+			std::cout << "Problema ao abrir o arquivo!!\tLinha: 190\n";
+		}
 
-        //passa pelo arquivo inteiro procurando os nomes
-        while (Reag.tellg() < End)
-        {
-            char Marca = 0;
-            Reag.read(&Marca, sizeof(char));
+		bool tem = false;
 
-            if (Marca == -1)
-            {
-                unsigned int NomeSize;
-                Reag.read((char*)&NomeSize, sizeof(unsigned int));
+		Reag.seekg(0, std::ios::end);
+		unsigned int End = Reag.tellg(); //salva onde é o final do arquivo
 
-                if (Nome.size() == NomeSize)
-                {
-                    bool Achou = true;
+		Reag.seekg(0, std::ios::beg);
 
-                    char NomeSalvoChar;
-                    int NomeInd = 0;
+		//passa pelo arquivo inteiro procurando os nomes
+		while (Reag.tellg() < End)
+		{
+			char Marca = 0;
+			Reag.read(&Marca, sizeof(char));
 
-                    //procura o nome é vê se é igual ao nome sendo procurado
-                    for (; NomeInd < NomeSize; NomeInd++)
-                    {
-                        Reag.read(&NomeSalvoChar, sizeof(char));
+			if (Marca == -1)
+			{
+				unsigned int NomeSize;
+				Reag.read((char*)&NomeSize, sizeof(unsigned int));
 
-                        if (NomeSalvoChar != Nome.c_str()[NomeInd])
-                        {
-                            Achou = false;
-                            break;
-                        }
-                    }
+				if (Nome.size() == NomeSize)
+				{
+					bool Achou = true;
 
-                    if (Achou == true)
-                    {
-                        Reag.seekg(-((int)NomeSize + (long)sizeof(int) + (long)sizeof(char)), std::ios::cur);
+					char NomeSalvoChar;
+					int NomeInd = 0;
 
-                        PrintInfo((int)Reag.tellg());
+					//procura o nome é vê se é igual ao nome sendo procurado
+					for (; NomeInd < NomeSize; NomeInd++)
+					{
+						Reag.read(&NomeSalvoChar, sizeof(char));
 
-                        Reag.seekg(NomeSize + (sizeof(int) * 5) + sizeof(char) + (sizeof(float) * 2), std::ios::cur);
+						if (NomeSalvoChar != Nome.c_str()[NomeInd])
+						{
+							Achou = false;
+							break;
+						}
+					}
 
-                        tem = true;
-                    }
-                    else
-                        Reag.seekg(((sizeof(float) * 2) + (sizeof(int) * 4)), std::ios::cur);
-                }
-                else
-                    Reag.seekg((NomeSize + (sizeof(float) * 2) + (sizeof(int) * 4)), std::ios::cur);
-            }
-        }
+					if (Achou == true)
+					{
+						Reag.seekg(-((int)NomeSize + (long)sizeof(int) + (long)sizeof(char)), std::ios::cur);
 
-        if (!tem)
-            std::cout << "\nO Reagente nao existe na lista!!\n";
-    }
+						PrintInfo((int)Reag.tellg());
 
-    void PrintEspecifico(float Peso)
-    {
-        std::fstream Reag(Arq.c_str(), std::ios::in | std::ios::binary);
+						Reag.seekg(NomeSize + (sizeof(int) * 5) + sizeof(char) + (sizeof(float) * 2), std::ios::cur);
 
-        if (!Reag.is_open() || Reag.bad())
-        {
-            std::cout << "Problema ao abrir o arquivo!!\tLinha: 190\n";
-        }
+						tem = true;
+					}
+					else
+						Reag.seekg(((sizeof(float) * 2) + (sizeof(int) * 4)), std::ios::cur);
+				}
+				else
+					Reag.seekg((NomeSize + (sizeof(float) * 2) + (sizeof(int) * 4)), std::ios::cur);
+			}
+		}
 
-        bool tem = false;
+		if (!tem)
+			std::cout << "\nO Reagente nao existe na lista!!\n";
+	}
 
-        Reag.seekg(0, std::ios::end);
-        unsigned int End = Reag.tellg(); //salva onde é o final do arquivo
+	void PrintEspecifico(float Peso)
+	{
+		std::fstream Reag(Arq.c_str(), std::ios::in | std::ios::binary);
 
-        Reag.seekg(0, std::ios::beg);
+		if (!Reag.is_open() || Reag.bad())
+		{
+			std::cout << "Problema ao abrir o arquivo!!\tLinha: 190\n";
+		}
 
-        //passa pelo arquivo inteiro procurando os nomes
-        while (Reag.tellg() < End)
-        {
-            char Marca = 0;
-            Reag.read(&Marca, sizeof(char));
+		bool tem = false;
 
-            if (Marca == -1)
-            {
-                unsigned int NomeSize;
-                Reag.read((char*)&NomeSize, sizeof(unsigned int));
-                Reag.seekg(NomeSize, std::ios::cur);
-                float PesoReag;
-                Reag.read((char*)&PesoReag, sizeof(float));
+		Reag.seekg(0, std::ios::end);
+		unsigned int End = Reag.tellg(); //salva onde é o final do arquivo
 
-                if (PesoReag >= (Peso - DesvioAceitavel) && PesoReag <= (Peso + DesvioAceitavel))
-                {
-                    Reag.seekg(-((int)NomeSize + (long)sizeof(int) + (long)sizeof(char) + (long)sizeof(float)), std::ios::cur);
+		Reag.seekg(0, std::ios::beg);
 
-                    PrintInfo((int)Reag.tellg());
+		//passa pelo arquivo inteiro procurando os nomes
+		while (Reag.tellg() < End)
+		{
+			char Marca = 0;
+			Reag.read(&Marca, sizeof(char));
 
-                    Reag.seekg(NomeSize + (sizeof(int) * 5) + sizeof(char) + (sizeof(float) * 2), std::ios::cur);
-                }
-                else
-                    Reag.seekg((sizeof(float) + (sizeof(int) * 4)), std::ios::cur);
-            }
-        }
-    }
+			if (Marca == -1)
+			{
+				unsigned int NomeSize;
+				Reag.read((char*)&NomeSize, sizeof(unsigned int));
+				Reag.seekg(NomeSize, std::ios::cur);
+				float PesoReag;
+				Reag.read((char*)&PesoReag, sizeof(float));
 
-    void PrintEspecifico(int Mes, int Ano)
-    {
-        std::fstream Reag(Arq.c_str(), std::ios::in | std::ios::binary);
+				if (PesoReag >= (Peso - DesvioAceitavel) && PesoReag <= (Peso + DesvioAceitavel))
+				{
+					Reag.seekg(-((int)NomeSize + (long)sizeof(int) + (long)sizeof(char) + (long)sizeof(float)), std::ios::cur);
 
-        if (!Reag.is_open() || Reag.bad())
-        {
-            std::cout << "Problema ao abrir o arquivo!!\tLinha: 190\n";
-        }
+					PrintInfo((int)Reag.tellg());
 
-        bool tem = false;
+					Reag.seekg(NomeSize + (sizeof(int) * 5) + sizeof(char) + (sizeof(float) * 2), std::ios::cur);
+				}
+				else
+					Reag.seekg((sizeof(float) + (sizeof(int) * 4)), std::ios::cur);
+			}
+		}
+	}
 
-        Reag.seekg(0, std::ios::end);
-        unsigned int End = Reag.tellg(); //salva onde é o final do arquivo
+	void PrintEspecifico(int Mes, int Ano)
+	{
+		std::fstream Reag(Arq.c_str(), std::ios::in | std::ios::binary);
 
-        Reag.seekg(0, std::ios::beg);
+		if (!Reag.is_open() || Reag.bad())
+		{
+			std::cout << "Problema ao abrir o arquivo!!\tLinha: 190\n";
+		}
 
-        //passa pelo arquivo inteiro procurando os nomes
-        while (Reag.tellg() < End)
-        {
-            char Marca = 0;
-            Reag.read(&Marca, sizeof(char));
+		bool tem = false;
 
-            if (Marca == -1)
-            {
-                unsigned int NomeSize;
-                Reag.read((char*)&NomeSize, sizeof(unsigned int));
-                Reag.seekg(NomeSize + (sizeof(float) * 2) + sizeof(int), std::ios::cur);
-                int MesR, AnoR;
-                Reag.read((char*)&MesR, sizeof(int));
-                Reag.read((char*)&AnoR, sizeof(int));
+		Reag.seekg(0, std::ios::end);
+		unsigned int End = Reag.tellg(); //salva onde é o final do arquivo
 
-                if (MesR == Mes && AnoR == Ano)
-                {
-                    Reag.seekg(-((int)NomeSize + (long)(sizeof(int) * 4) + (long)sizeof(char) + (long)(sizeof(float) * 2)), std::ios::cur);
+		Reag.seekg(0, std::ios::beg);
 
-                    PrintInfo((int)Reag.tellg());
+		//passa pelo arquivo inteiro procurando os nomes
+		while (Reag.tellg() < End)
+		{
+			char Marca = 0;
+			Reag.read(&Marca, sizeof(char));
 
-                    Reag.seekg(NomeSize + (sizeof(int) * 5) + sizeof(char) + (sizeof(float) * 2), std::ios::cur);
-                }
-                else
-                    Reag.seekg((sizeof(int)), std::ios::cur);
-            }
-        }
-    }
+			if (Marca == -1)
+			{
+				unsigned int NomeSize;
+				Reag.read((char*)&NomeSize, sizeof(unsigned int));
+				Reag.seekg(NomeSize + (sizeof(float) * 2) + sizeof(int), std::ios::cur);
+				int MesR, AnoR;
+				Reag.read((char*)&MesR, sizeof(int));
+				Reag.read((char*)&AnoR, sizeof(int));
 
-    void PrintAlterados()
-    {
-        std::fstream Reag(Arq.c_str(), std::ios::in | std::ios::binary);
-        std::fstream ReagA(ArqM.c_str(), std::ios::in | std::ios::binary);
+				if (MesR == Mes && AnoR == Ano)
+				{
+					Reag.seekg(-((int)NomeSize + (long)(sizeof(int) * 4) + (long)sizeof(char) + (long)(sizeof(float) * 2)), std::ios::cur);
 
-        if (Reag.bad() || !Reag.is_open())
-            std::cout << "Problema ao abrir o arquivo!!!\tLinha: 919\n";
+					PrintInfo((int)Reag.tellg());
 
-        if (ReagA.bad() || !ReagA.is_open())
-            std::cout << "Problema ao abrir o arquivo!!!\tLinha: 922\n";
+					Reag.seekg(NomeSize + (sizeof(int) * 5) + sizeof(char) + (sizeof(float) * 2), std::ios::cur);
+				}
+				else
+					Reag.seekg((sizeof(int)), std::ios::cur);
+			}
+		}
+	}
 
-        ReagA.seekg(0, std::ios::end);
-        unsigned int ReagAFim = ReagA.tellg();
+	void PrintAlterados()
+	{
+		std::fstream Reag(Arq.c_str(), std::ios::in | std::ios::binary);
+		std::fstream ReagA(ArqM.c_str(), std::ios::in | std::ios::binary);
 
-        ReagA.seekg(0, std::ios::beg);
+		if (Reag.bad() || !Reag.is_open())
+			std::cout << "Problema ao abrir o arquivo!!!\tLinha: 919\n";
 
-        float Diferença = 0;
+		if (ReagA.bad() || !ReagA.is_open())
+			std::cout << "Problema ao abrir o arquivo!!!\tLinha: 922\n";
 
-        bool Combo = true;
-        bool EstadoA = -1; //false Diminuiu, true aumentou
+		ReagA.seekg(0, std::ios::end);
+		unsigned int ReagAFim = ReagA.tellg();
 
-        int Alerta;
+		ReagA.seekg(0, std::ios::beg);
 
-        std::deque<std::pair <int, float>> Alterados; //salva o index(depois da marca) e a diferença dos reagentes alterados enquanto o combo for true
+		float Diferença = 0;
 
-        while (ReagA.tellg() < ReagAFim)
-        {
-            char Marca = 0;
+		bool Combo = true;
+		bool EstadoA = -1; //false Diminuiu, true aumentou
 
-            ReagA.read(&Marca, sizeof(char));
+		int Alerta;
 
-            if (Marca != -1 && Marca != -2)
-                std::cout << "Problema ao ler o arquivo!!\tLinha: 931\n";
+		std::deque<std::pair <int, float>> Alterados; //salva o index(depois da marca) e a diferença dos reagentes alterados enquanto o combo for true
 
-            bool MultComp = false;
+		while (ReagA.tellg() < ReagAFim)
+		{
+			char Marca = 0;
 
-            if (Marca == -2)
-                MultComp = true;
+			ReagA.read(&Marca, sizeof(char));
 
-            int Lugar, NomeSize;
+			if (Marca != -1 && Marca != -2)
+				std::cout << "Problema ao ler o arquivo!!\tLinha: 931\n";
 
-            if (!MultComp)
-                ReagA.read((char*)&Diferença, sizeof(float));
+			bool MultComp = false;
 
-            if (Diferença < 0)
-            {
-                ReagA.read((char*)&Lugar, sizeof(int));
-                ReagA.read((char*)&Alerta, sizeof(int));
+			if (Marca == -2)
+				MultComp = true;
 
-                if (Lugar > -1)
-                {
-                    Reag.seekg(Lugar - 1, std::ios::beg);
-                    Reag.read(&Marca, sizeof(char));
+			int Lugar, NomeSize;
 
-                    if (Marca != -1)
-                        std::cout << "problemas ao ler o arquivo!!\tLinha: 940\n";
+			if (!MultComp)
+				ReagA.read((char*)&Diferença, sizeof(float));
 
-                    if (!EstadoA && EstadoA != -1)
-                    {
-                        Combo = false;
-                        Alterados.clear();
-                    }
-                    EstadoA = false;
+			if (Diferença < 0)
+			{
+				ReagA.read((char*)&Lugar, sizeof(int));
 
-                    if (Combo)
-                    {
-                        Alterados.push_back(std::pair<int, float>(Lugar, -1));
-                    }
+				ReagA.read(&Marca, sizeof(char));
 
-                    Reag.read((char*)&NomeSize, sizeof(int));
+				ReagA.seekg(-(long long)sizeof(char), std::ios::cur);
 
-                    char* Nome = new char[NomeSize + 1];
+				if (Marca != -1 && Marca != -2)
+				{
+					ReagA.read((char*)&Alerta, sizeof(int));
+				}
 
-                    Reag.read(Nome, NomeSize);
+				if (Lugar > -1)
+				{
+					Reag.seekg(Lugar - 1, std::ios::beg);
+					Reag.read(&Marca, sizeof(char));
 
-                    Nome[NomeSize] = '\0';
+					if (Marca != -1)
+						std::cout << "problemas ao ler o arquivo!!\tLinha: 940\n";
 
-                    if (!MultComp)
-                    {
-                        std::cout << "\n\n-------------------------\nPESO DIMINUIU EM: " << Diferença << " g\n" << "Possivel Reagente Aterado : " << Nome;
-                    }
-                    else
-                    {
-                        std::cout << " // " << Nome;
+					if (!EstadoA && EstadoA != -1)
+					{
+						Combo = false;
+						Alterados.clear();
+					}
+					EstadoA = false;
 
-                        Combo = false;
-                        Alterados.clear();
-                    }
+					if (Combo)
+					{
+						Alterados.push_back(std::pair<int, float>(Lugar, -1));
+					}
 
-                    delete[] Nome;
-                }
-                else
-                {
-                    std::cout << "\n\n-------------------------\nPESO DIMINUIU EM: " << Diferença << " g\nNao tem nenhum Reagente compativel!!";
+					Reag.read((char*)&NomeSize, sizeof(int));
 
-                    Combo = false;
-                    Alterados.clear();
+					char* Nome = new char[NomeSize + 1];
 
-                }
-            }
-            else
-            {
-                std::cout << "\n\n-------------------------\nPESO AUMENTOU EM: " << Diferença << " g\nVerifique os Reagentes possivelmente alterados!!";
-                if (EstadoA)
-                {
-                    Combo = false;
-                    Alterados.clear();
-                }
-                EstadoA = true;
+					Reag.read(Nome, NomeSize);
 
-                if (Combo && !Alterados.empty())
-                {
-                    if (Alterados.back().second == -1)
-                    {
-                        Reag.seekg(Alterados.back().first, std::ios::beg);
+					Nome[NomeSize] = '\0';
 
-                        Reag.seekg(Alterados.back().first - 1, std::ios::beg);
+					if (!MultComp)
+					{
+						std::cout << "\n\n-------------------------\nPESO DIMINUIU EM: " << Diferença << " g\n" << "Possivel Reagente Aterado : " << Nome;
+					}
+					else
+					{
+						std::cout << " // " << Nome;
 
-                        Reag.read(&Marca, sizeof(char));
+						Combo = false;
+						Alterados.clear();
+					}
 
-                        if (Marca != -1)
-                            std::cout << "Problemas ao ler o arquivo!!!\tLinha: 1069\n";
+					delete[] Nome;
+				}
+				else
+				{
+					std::cout << "\n\n-------------------------\nPESO DIMINUIU EM: " << Diferença << " g\nNao tem nenhum Reagente compativel!!";
 
-                        int NomeSize;
+					Combo = false;
+					Alterados.clear();
 
-                        Reag.read((char*)&NomeSize, sizeof(int));
+				}
+			}
+			else
+			{
+				std::cout << "\n\n-------------------------\nPESO AUMENTOU EM: " << Diferença << " g\nVerifique os Reagentes possivelmente alterados!!";
+				if (EstadoA)
+				{
+					Combo = false;
+					Alterados.clear();
+				}
+				EstadoA = true;
 
-                        Reag.seekg(NomeSize + sizeof(float), std::ios::cur);
+				if (Combo && !Alterados.empty())
+				{
+					if (Alterados.back().second == -1)
+					{
+						Reag.seekg(Alterados.back().first - 1, std::ios::beg);
 
-                        float PesoC;
+						Reag.read(&Marca, sizeof(char));
 
-                        Reag.read((char*)&PesoC, sizeof(float));
+						if (Marca != -1)
+							std::cout << "Problemas ao ler o arquivo!!!\tLinha: 1069\n";
 
-                        if (Diferença >= PesoC)
-                            Alterados.back().second = Diferença;
-                        else
-                            Combo = false;
-                    }
+						int NomeSize;
 
-                }
-            }
-        }
-        std::cout << '\n';
+						Reag.read((char*)&NomeSize, sizeof(int));
 
-        if (Combo && !Alterados.empty())
-        {
-            std::cout << "\n\nFoi possivel achar todos os reagentes alterados deseja salvar as mudancas?(verifique se as mudacas estao corretas antes de confirmar)\n(caso deseje seguir digite \"sim\")\n> ";
-            std::string Comando;
-            std::getline(std::cin, Comando);
+						Reag.seekg(NomeSize + sizeof(float), std::ios::cur);
 
-            if (Comando != "Sim" && Comando != "sim")
-                Combo = false;
+						float PesoC;
 
-            if (Combo)
-            {
-                char Marca;
-                for (std::deque <std::pair<int, float>>::iterator i = Alterados.begin(); i < Alterados.end(); i++)
-                {
-                    Reag.seekg(i->first - 1, std::ios::beg);
+						Reag.read((char*)&PesoC, sizeof(float));
 
-                    Reag.read(&Marca, sizeof(char));
+						if (Diferença >= PesoC)
+							Alterados.back().second = Diferença;
+						else
+							Combo = false;
+					}
 
-                    if (Marca != -1)
-                        std::cout << "Problemas ao ler o arquivo!!!\tLinha: 1069\n";
+				}
+			}
+		}
+		std::cout << '\n';
 
-                    int NomeSize;
+		if (Combo && !Alterados.empty())
+		{
+			std::cout << "\n\nFoi possivel achar todos os reagentes alterados deseja salvar as mudancas?(verifique se as mudacas estao corretas antes de confirmar)\n(caso deseje seguir digite \"sim\")\n> ";
+			std::string Comando;
+			std::getline(std::cin, Comando);
 
-                    Reag.read((char*)&NomeSize, sizeof(int));
+			if (Comando != "Sim" && Comando != "sim")
+				Combo = false;
 
-                    char* NomeReag = new char[NomeSize + 1];
-                    Reag.read(NomeReag, NomeSize);
-                    NomeReag[NomeSize] = '\0';
+			if (Combo)
+			{
+				char Marca;
+				for (std::deque <std::pair<int, float>>::iterator i = Alterados.begin(); i < Alterados.end(); i++)
+				{
+					Reag.seekg(i->first - 1, std::ios::beg);
 
+					Reag.read(&Marca, sizeof(char));
 
-                    float PesoA, PesoC;
+					if (Marca != -1)
+						std::cout << "Problemas ao ler o arquivo!!!\tLinha: 1069\n";
 
-                    Reag.read((char*)&PesoA, sizeof(float));
-                    Reag.read((char*)&PesoC, sizeof(float));
+					int NomeSize;
 
-                    PesoSalvo -= PesoA - i->second;
+					Reag.read((char*)&NomeSize, sizeof(int));
 
-                    TrocarPeso(NomeReag, i->second, PesoC);
-                }
-                ConfirmarAlteração();
-            }
-        }
+					char* NomeReag = new char[NomeSize + 1];
+					Reag.read(NomeReag, NomeSize);
+					NomeReag[NomeSize] = '\0';
 
-        Reag.close();
-        ReagA.close();
-    }
 
-    void PrintHistorico()
-    {
-        std::fstream ReagH(ArqH.c_str(), std::ios::in | std::ios::binary);
-        std::fstream ReagHA(ArqHA.c_str(), std::ios::in | std::ios::binary);
+					float PesoA, PesoC;
 
-        if (ReagH.bad() || !ReagH.is_open())
-            std::cout << "Problema ao abrir o arquivo!!!\tLinha: 1386\n";
+					Reag.read((char*)&PesoA, sizeof(float));
+					Reag.read((char*)&PesoC, sizeof(float));
 
-        if (ReagHA.bad() || !ReagH.is_open())
-            std::cout << "Problema ao abrir o arquivo!!!\tLinha: 1389\n";
+					PesoSalvo -= PesoA - i->second;
 
-        unsigned int ReagHEnd;
+					TrocarPeso(NomeReag, i->second, PesoC);
+				}
+				ConfirmarAlteração();
+			}
+		}
 
-        ReagH.seekg(0, std::ios::end);
+		Reag.close();
+		ReagA.close();
+	}
 
-        ReagHEnd = ReagH.tellg();
+	void PrintHistorico()
+	{
+		std::fstream ReagH(ArqH.c_str(), std::ios::in | std::ios::binary);
+		std::fstream ReagHA(ArqHA.c_str(), std::ios::in | std::ios::binary);
 
-        ReagH.seekg(0, std::ios::beg);
+		if (ReagH.bad() || !ReagH.is_open())
+			std::cout << "Problema ao abrir o arquivo!!!\tLinha: 1386\n";
 
-        float PesoAnt = -1;
+		if (ReagHA.bad() || !ReagH.is_open())
+			std::cout << "Problema ao abrir o arquivo!!!\tLinha: 1389\n";
 
-        while (ReagH.tellg() < ReagHEnd)
-        {
-            char Marca;
-            ReagH.read(&Marca, sizeof(char));
+		unsigned int ReagHEnd;
 
-            if (Marca != -1)
-                std::cout << "Problemas ao ler o arquivo!!\tLinha: 657\n";
+		ReagH.seekg(0, std::ios::end);
 
-            if (PesoAnt > -1)
-            {
-                float Diferença, PesoVer;
+		ReagHEnd = ReagH.tellg();
 
-                ReagH.read((char*)&PesoVer, sizeof(float));
+		ReagH.seekg(0, std::ios::beg);
 
-                Diferença = PesoVer - PesoAnt;
+		float PesoAnt = -1;
 
-                if (Diferença != 0)
-                {
-                    if(Diferença < 0)
-                        std::cout << "\n\n-------------------------\nPESO DIMINUIU EM: " << Diferença << " g";
-                    else
-                        std::cout << "\n\n-------------------------\nPESO AUMENTOU EM: " << Diferença << " g";
+		while (ReagH.tellg() < ReagHEnd)
+		{
+			char Marca;
+			ReagH.read(&Marca, sizeof(char));
 
-                    PesoAnt = PesoVer;
-                }
-            }
-            else
-            {
-                float PesoVer;
+			if (Marca != -1)
+			{
+				std::cout << "Problemas ao ler o arquivo!!\tLinha: 1907\n";
+				break;
+			}
 
-                ReagH.read((char*)&PesoVer, sizeof(float));
+			if (PesoAnt > -1)
+			{
+				float Diferença, PesoVer;
 
-                PesoAnt = PesoVer;
-            }
-        }
+				ReagH.read((char*)&PesoVer, sizeof(float));
 
-        ReagHA.seekg(0, std::ios::end);
+				Diferença = PesoVer - PesoAnt;
 
-        ReagHEnd = ReagHA.tellg();
+				if (Diferença != 0)
+				{
+					if (Diferença < 0)
+						std::cout << "\n\n-------------------------\nPESO DIMINUIU EM: " << Diferença << " g";
+					else
+						std::cout << "\n\n-------------------------\nPESO AUMENTOU EM: " << Diferença << " g";
 
-        ReagHA.seekg(0, std::ios::beg);
+					PesoAnt = PesoVer;
+				}
+			}
+			else
+			{
+				float PesoVer;
 
-        while (ReagHA.tellg() < ReagHEnd)
-        {
-            char Marca;
-            ReagHA.read(&Marca, sizeof(char));
+				ReagH.read((char*)&PesoVer, sizeof(float));
 
-            if (Marca != -1)
-                std::cout << "Problemas ao ler o arquivo!!\tLinha: 657\n";
+				PesoAnt = PesoVer;
+			}
+		}
 
-            if (PesoAnt > -1)
-            {
-                float Diferença, PesoVer;
+		ReagHA.seekg(0, std::ios::end);
 
-                ReagHA.read((char*)&PesoVer, sizeof(float));
+		ReagHEnd = ReagHA.tellg();
 
-                Diferença = PesoVer - PesoAnt;
+		ReagHA.seekg(0, std::ios::beg);
 
-                if (Diferença != 0)
-                {
-                    if (Diferença < 0)
-                        std::cout << "\n\n-------------------------\nPESO DIMINUIU EM: " << Diferença << " g";
-                    else
-                        std::cout << "\n\n-------------------------\nPESO AUMENTOU EM: " << Diferença << " g";
+		while (ReagHA.tellg() < ReagHEnd && ReagHA.is_open())
+		{
+			char Marca;
+			ReagHA.read(&Marca, sizeof(char));
 
-                    PesoAnt = PesoVer;
-                }
-            }
-            else
-            {
-                float PesoVer;
+			if (Marca != -1)
+			{
+				std::cout << "Problemas ao ler o arquivo!!\tLinha: 1951\n";
+				break;
+			}
 
-                ReagHA.read((char*)&PesoVer, sizeof(float));
+			if (PesoAnt > -1)
+			{
+				float Diferença, PesoVer;
 
-                PesoAnt = PesoVer;
-            }
-        }
+				ReagHA.read((char*)&PesoVer, sizeof(float));
 
-        ReagH.close();
-        ReagHA.close();
-    }
+				Diferença = PesoVer - PesoAnt;
 
- private:
-     std::string Arq  = "Reagentes/" + Nome + ".dat";
-     std::string ArqV = "Reagentes/" + Nome + "_Vencido.dat";
-     std::string ArqA = "Reagentes/" + Nome + "_Antes.dat";
-     std::string ArqD = "Reagentes/" + Nome + "_Depois.dat";
-     std::string ArqH = "Reagentes/" + Nome + "_Historico.dat";
-     std::string ArqM = "Reagentes/" + Nome + "_Alterados.dat";//contem os possiveis reagentes que foram alterados quando o peso muda
-     std::string ArqMi = "Reagentes/" + Nome + "_Minimo.dat";
-     std::string ArqHA = "Reagentes/" + Nome + "_HistoricoAntigo.dat";
+				if (Diferença != 0)
+				{
+					if (Diferença < 0)
+						std::cout << "\n\n-------------------------\nPESO DIMINUIU EM: " << Diferença << " g";
+					else
+						std::cout << "\n\n-------------------------\nPESO AUMENTOU EM: " << Diferença << " g";
 
-    const float DesvioAceitavel = 0; //para +/-
+					PesoAnt = PesoVer;
+				}
+			}
+			else
+			{
+				float PesoVer;
 
-    unsigned int EscolherReag(std::string& Nome)
-    {
-        std::fstream Reag(Arq.c_str(), std::ios::in | std::ios::binary);
+				ReagHA.read((char*)&PesoVer, sizeof(float));
 
-        if (!Reag.is_open() || Reag.bad())
-        {
-            std::cout << "Problema ao abrir o arquivo!!\tLinha: 190\n";
-            return -1;
-        }
+				PesoAnt = PesoVer;
+			}
+		}
 
-        std::deque<unsigned int> PosiveisDistancias; //salva depois das marcas
+		ReagH.close();
+		ReagHA.close();
+	}
 
-        bool tem = false;
+private:
+	std::string Arq = "Reagentes/" + Nome + ".dat";
+	std::string ArqV = "Reagentes/" + Nome + "_Vencido.dat";
+	std::string ArqA = "Reagentes/" + Nome + "_Antes.dat";
+	std::string ArqD = "Reagentes/" + Nome + "_Depois.dat";
+	std::string ArqH = "Reagentes/" + Nome + "_Historico.dat";
+	std::string ArqM = "Reagentes/" + Nome + "_Alterados.dat";//contem os possiveis reagentes que foram alterados quando o peso muda
+	std::string ArqMi = "Reagentes/" + Nome + "_Minimo.dat";
+	std::string ArqHA = "Reagentes/" + Nome + "_HistoricoAntigo.dat";
 
-        Reag.seekg(0, std::ios::end);
-        unsigned int End = Reag.tellg(); //salva onde é o final do arquivo
+	const float DesvioAceitavel = 0; //para +/-
 
-        Reag.seekg(0, std::ios::beg);
+	unsigned int EscolherReag(std::string& Nome)
+	{
+		std::fstream Reag(Arq.c_str(), std::ios::in | std::ios::binary);
 
-        //passa pelo arquivo inteiro procurando os nomes
-        while (Reag.good())
-        {
-            char Marca = 0;
-            Reag.read(&Marca, sizeof(char));
+		if (!Reag.is_open() || Reag.bad())
+		{
+			std::cout << "Problema ao abrir o arquivo!!\tLinha: 190\n";
+			return -1;
+		}
 
-            if (Marca == -1)
-            {
-                unsigned int ComecoReag = Reag.tellg();
+		std::deque<unsigned int> PosiveisDistancias; //salva depois das marcas
 
-                unsigned int NomeSize;
-                Reag.read((char*)&NomeSize, sizeof(unsigned int));
+		bool tem = false;
 
-                bool Achou = true;
+		Reag.seekg(0, std::ios::end);
+		unsigned int End = Reag.tellg(); //salva onde é o final do arquivo
 
-                char NomeSalvoChar;
-                int NomeInd = 0;
+		Reag.seekg(0, std::ios::beg);
 
-                //procura o nome é vê se é igual ao nome sendo procurado
-                for (; NomeInd < NomeSize; NomeInd++)
-                {
-                    Reag.read(&NomeSalvoChar, sizeof(char));
+		//passa pelo arquivo inteiro procurando os nomes
+		while (Reag.good())
+		{
+			char Marca = 0;
+			Reag.read(&Marca, sizeof(char));
 
-                    if (NomeSalvoChar != Nome.c_str()[NomeInd])
-                    {
-                        Achou = false;
-                        break;
-                    }
-                }
+			if (Marca == -1)
+			{
+				unsigned int ComecoReag = Reag.tellg();
 
-                if (Achou == true)
-                {
-                    Reag.seekg(ComecoReag - 1, std::ios::beg);
+				unsigned int NomeSize;
+				Reag.read((char*)&NomeSize, sizeof(unsigned int));
 
-                    Marca = 0;
-                    Reag.read(&Marca, sizeof(char));
+				bool Achou = true;
 
-                    if (Marca == -1)
-                    {
-                        PosiveisDistancias.push_back(ComecoReag); //coloca em possiveis distancias a distancia depois dad marca do Reagente achado
-                        tem = true;
-                    }
-                }
+				char NomeSalvoChar;
+				int NomeInd = 0;
 
-                Reag.seekg(ComecoReag + (sizeof(unsigned int) + NomeSize + (sizeof(float) * 2) + (sizeof(int) * 4)), std::ios::beg);
-            }
-        }
+				//procura o nome é vê se é igual ao nome sendo procurado
+				for (; NomeInd < NomeSize; NomeInd++)
+				{
+					Reag.read(&NomeSalvoChar, sizeof(char));
 
-        Reag.close(); //chegou ao fim do arquivo, precisa abrir ele de novo para conseguir utiliza-lo
+					if (NomeSalvoChar != Nome.c_str()[NomeInd])
+					{
+						Achou = false;
+						break;
+					}
+				}
 
-        if (!tem)
-        {
-            std::cout << "O reagente escolhido nao existe!!\tLinha 255\n";
-            return -1;
-        }
+				if (Achou == true)
+				{
+					Reag.seekg(ComecoReag - 1, std::ios::beg);
 
-        Reag.open(Arq.c_str(), std::ios::in | std::ios::binary);
+					Marca = 0;
+					Reag.read(&Marca, sizeof(char));
 
-        if (!Reag.is_open() || Reag.bad())
-        {
-            std::cout << "Problema ao abrir o arquivo!!\tLinha: 268\n";
-            return -1;
-        }
+					if (Marca == -1)
+					{
+						PosiveisDistancias.push_back(ComecoReag); //coloca em possiveis distancias a distancia depois dad marca do Reagente achado
+						tem = true;
+					}
+				}
 
-        if (PosiveisDistancias.size() > 1)
-        {
-            std::cout << "mais de um reagente corresponde a essas informacoes, qual deles apagar?\n";
+				Reag.seekg(ComecoReag + (sizeof(unsigned int) + NomeSize + (sizeof(float) * 2) + (sizeof(int) * 4)), std::ios::beg);
+			}
+		}
 
-            //passa por todos os reagentes com o mesmo nome do escolhido e mostra seus pesos, nomes e datas de validade
-            for (int i = 0; i < PosiveisDistancias.size(); i++) 
-            {
-                Reag.seekg(PosiveisDistancias[i] - 1, std::ios::beg);
+		Reag.close(); //chegou ao fim do arquivo, precisa abrir ele de novo para conseguir utiliza-lo
 
-                char Marca = 0;
-                Reag.read(&Marca, sizeof(char));
+		if (!tem)
+		{
+			std::cout << "O reagente escolhido nao existe!!\tLinha 255\n";
+			return -1;
+		}
 
-                if (Marca == -1)
-                {
-                    unsigned int NomeSize;
-                    Reag.read((char*)&NomeSize, sizeof(unsigned int));
+		Reag.open(Arq.c_str(), std::ios::in | std::ios::binary);
 
-                    char NomeChar;
+		if (!Reag.is_open() || Reag.bad())
+		{
+			std::cout << "Problema ao abrir o arquivo!!\tLinha: 268\n";
+			return -1;
+		}
 
-                    std::cout << "\nRegente " << i << "\nNome: ";
+		if (PosiveisDistancias.size() > 1)
+		{
+			std::cout << "mais de um reagente corresponde a essas informacoes, qual deles apagar?\n";
 
-                    for (int NomeInd = 0; NomeInd < (int)NomeSize; NomeInd++)
-                    {
-                        Reag.read(&NomeChar, sizeof(char));
+			//passa por todos os reagentes com o mesmo nome do escolhido e mostra seus pesos, nomes e datas de validade
+			for (int i = 0; i < PosiveisDistancias.size(); i++)
+			{
+				Reag.seekg(PosiveisDistancias[i] - 1, std::ios::beg);
 
-                        std::cout << NomeChar;
-                    }
+				char Marca = 0;
+				Reag.read(&Marca, sizeof(char));
 
-                    float Peso;
-                    Reag.read((char*)&Peso, sizeof(float));
+				if (Marca == -1)
+				{
+					unsigned int NomeSize;
+					Reag.read((char*)&NomeSize, sizeof(unsigned int));
 
-                    Reag.seekg(sizeof(float), std::ios::cur);
+					char NomeChar;
 
-                    int Validade[3];
-                    Reag.read((char*)&Validade, sizeof(int) * 3);
+					std::cout << "\nRegente " << i << "\nNome: ";
 
-                    std::cout << "\nPeso: " << Peso << "\nValidade: " << Validade[0] << " / " << Validade[1] << " / " << Validade[2] << '\n';
-                }
-                else
-                {
-                    std::cout << "problema ao ler o arquivo!!\tLinha: 313\n";
-                    Reag.close();
-                    return -1;
-                }
-            }
+					for (int NomeInd = 0; NomeInd < (int)NomeSize; NomeInd++)
+					{
+						Reag.read(&NomeChar, sizeof(char));
 
-            std::cout << "\nDigiteo numero do reagente:\n> ";
+						std::cout << NomeChar;
+					}
 
-            float Escolido;
-            bool valido = false;
+					float Peso;
+					Reag.read((char*)&Peso, sizeof(float));
 
-            std::string comando;
-            std::getline(std::cin, comando);
+					Reag.seekg(sizeof(float), std::ios::cur);
 
-            while (!valido)
-            {
-                valido = ValidadeInput(comando, Escolido);
-                if (!valido)
-                {
-                    std::cout << "INUT INVALIDO!!!  tente novamente\n> ";
-                    std::getline(std::cin, comando);
-                }
-                else if (Escolido >= PosiveisDistancias.size() || Escolido < 0)
-                {
-                    std::cout << "Escolha nao e possivel!!! tente novamente\n";
-                    valido = false;
+					int Validade[3];
+					Reag.read((char*)&Validade, sizeof(int) * 3);
 
-                    std::cout << "> ";
-                    std::getline(std::cin, comando);
-                }
-            }
-            Reag.close();
-            return PosiveisDistancias[Escolido];
-        }
-        else if (PosiveisDistancias.size() == 1)
-        {
-            Reag.close();
-            return PosiveisDistancias[0];
-        }
-        else 
-        {
-            std::cout << "Escolha nao existe!!\n";
-            Reag.close();
-            return -1;
-        }
+					std::cout << "\nPeso: " << Peso << "\nValidade: " << Validade[0] << " / " << Validade[1] << " / " << Validade[2] << '\n';
+				}
+				else
+				{
+					std::cout << "problema ao ler o arquivo!!\tLinha: 313\n";
+					Reag.close();
+					return -1;
+				}
+			}
 
-        Reag.close();
-    }
+			std::cout << "\nDigiteo numero do reagente:\n> ";
 
-    void GetAntes(std::string Arq, int LocalReag)//Salva as informações Antes do reagente seleconado no Arquivo *NOME*_Antes.dat
-    {
-        std::fstream Reag(Arq.c_str(), std::ios::in | std::ios::binary);
+			float Escolido;
+			bool valido = false;
 
-        std::fstream ReagT(ArqA.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
+			std::string comando;
+			std::getline(std::cin, comando);
 
-        if (Reag.bad() || !Reag.is_open())
-        {
-            std::cout << "Problema ao abrir o arquivo!!\tLinha: 364";
-            return;
-        }
+			while (!valido)
+			{
+				valido = ValidadeInput(comando, Escolido);
+				if (!valido)
+				{
+					std::cout << "INUT INVALIDO!!!  tente novamente\n> ";
+					std::getline(std::cin, comando);
+				}
+				else if (Escolido >= PosiveisDistancias.size() || Escolido < 0)
+				{
+					std::cout << "Escolha nao e possivel!!! tente novamente\n";
+					valido = false;
 
-        if (ReagT.bad() || !ReagT.is_open())
-        {
-            std::cout << "Problema ao abrir o arquivo!!\tLinha: 371";
-            return;
-        }
+					std::cout << "> ";
+					std::getline(std::cin, comando);
+				}
+			}
+			Reag.close();
+			return PosiveisDistancias[Escolido];
+		}
+		else if (PosiveisDistancias.size() == 1)
+		{
+			Reag.close();
+			return PosiveisDistancias[0];
+		}
+		else
+		{
+			std::cout << "Escolha nao existe!!\n";
+			Reag.close();
+			return -1;
+		}
 
-        if (LocalReag != -1)
-        {
-            char marca = ' ';
+		Reag.close();
+	}
 
-            Reag.seekg(LocalReag);
+	void GetAntes(std::string Arq, int LocalReag)//Salva as informações Antes do reagente seleconado no Arquivo *NOME*_Antes.dat
+	{
+		std::fstream Reag(Arq.c_str(), std::ios::in | std::ios::binary);
 
-            Reag.read(&marca, sizeof(char));
+		std::fstream ReagT(ArqA.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
 
-            if (marca == -1)
-            {
-                char* TempA = &marca;
+		if (Reag.bad() || !Reag.is_open())
+		{
+			std::cout << "Problema ao abrir o arquivo!!\tLinha: 364";
+			return;
+		}
 
-                Reag.seekg(0, std::ios::beg);
+		if (ReagT.bad() || !ReagT.is_open())
+		{
+			std::cout << "Problema ao abrir o arquivo!!\tLinha: 371";
+			return;
+		}
 
-                if ((LocalReag - 1))
-                {
-                    bool NewUsado = false;
+		if (LocalReag != -1)
+		{
+			char marca = ' ';
 
-                    if (LocalReag > 100)
-                    {
-                        TempA = new char[100];
-                        NewUsado = true;
-                    }
+			Reag.seekg(LocalReag);
 
-                    for (; LocalReag > 100; LocalReag -= 100)
-                    {
-                        Reag.read(TempA, 100);
+			Reag.read(&marca, sizeof(char));
 
-                        ReagT.write(TempA, 100);
-                    }
+			if (marca == -1)
+			{
+				char* TempA = &marca;
 
-                    if (NewUsado)
-                    {
-                        delete[] TempA;
-                    }
+				Reag.seekg(0, std::ios::beg);
 
-                    if (LocalReag)
-                    {
-                        TempA = new char[LocalReag];
+				if ((LocalReag - 1))
+				{
+					bool NewUsado = false;
 
-                        Reag.read(TempA, LocalReag);
+					if (LocalReag > 100)
+					{
+						TempA = new char[100];
+						NewUsado = true;
+					}
 
-                        ReagT.write(TempA, LocalReag);
+					for (; LocalReag > 100; LocalReag -= 100)
+					{
+						Reag.read(TempA, 100);
 
-                        delete[] TempA;
-                    }
-                }
-            }
-            else
-            {
-                std::cout << "Problema ao ler o arquivo.\t Linha: 490\n";
-            }
-        }
+						ReagT.write(TempA, 100);
+					}
 
-        Reag.close();
-        ReagT.close();
-    }
+					if (NewUsado)
+					{
+						delete[] TempA;
+					}
 
-    void GetDepois(std::string Arq, int LocalReag)//Salva as informações depois do reagente seleconado no Arquivo *NOME*_Depois.dat
-    {
-        std::fstream Reag(Arq.c_str(), std::ios::in | std::ios::binary);
+					if (LocalReag)
+					{
+						TempA = new char[LocalReag];
 
-        std::fstream ReagT(ArqD.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
+						Reag.read(TempA, LocalReag);
 
-        if (Reag.bad() || !Reag.is_open())
-        {
-            std::cout << "Problema ao abrir o arquivo!!\tLinha: 439";
-            return;
-        }
+						ReagT.write(TempA, LocalReag);
 
-        if (ReagT.bad() || !ReagT.is_open())
-        {
-            std::cout << "Problema ao abrir o arquivo!!\tLinha: 445";
-            return;
-        }
+						delete[] TempA;
+					}
+				}
+			}
+			else
+			{
+				std::cout << "Problema ao ler o arquivo.\t Linha: 490\n";
+			}
+		}
 
-        if (LocalReag < 0)
-            LocalReag = 0;
-           
-        Reag.seekg(LocalReag);
+		Reag.close();
+		ReagT.close();
+	}
 
-        char Marca;
+	void GetDepois(std::string Arq, int LocalReag)//Salva as informações depois do reagente seleconado no Arquivo *NOME*_Depois.dat
+	{
+		std::fstream Reag(Arq.c_str(), std::ios::in | std::ios::binary);
 
-        Reag.read(&Marca, sizeof(char));
+		std::fstream ReagT(ArqD.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
 
-        if (Marca == -1)
-        {
-            unsigned int NomeSize;
+		if (Reag.bad() || !Reag.is_open())
+		{
+			std::cout << "Problema ao abrir o arquivo!!\tLinha: 439";
+			return;
+		}
 
-            Reag.read((char*)&NomeSize, sizeof(unsigned int));
+		if (ReagT.bad() || !ReagT.is_open())
+		{
+			std::cout << "Problema ao abrir o arquivo!!\tLinha: 445";
+			return;
+		}
 
-            Reag.seekg(NomeSize + (sizeof(float) * 2) + (sizeof(int) * 4), std::ios::cur);
+		if (LocalReag < 0)
+			LocalReag = 0;
 
-            unsigned int ExcluidoD = Reag.tellg();
+		Reag.seekg(LocalReag);
 
-            Reag.seekg(0, std::ios::end);
-            unsigned int EndReag = Reag.tellg();
+		char Marca;
 
-            char* TempD = &Marca;
-            unsigned int TamanhoD;
+		Reag.read(&Marca, sizeof(char));
 
-            if (ExcluidoD < EndReag)
-            {
-                Reag.seekg(ExcluidoD, std::ios::beg);
+		if (Marca == -1)
+		{
+			unsigned int NomeSize;
 
-                Marca = 0;
+			Reag.read((char*)&NomeSize, sizeof(unsigned int));
 
-                Reag.read(&Marca, sizeof(char));
+			Reag.seekg(NomeSize + (sizeof(float) * 2) + (sizeof(int) * 4), std::ios::cur);
 
-                if (Marca != -1)
-                {
-                    std::cout << "problema ao ler o arquivo!!\tLinha: 382\n";
-                    return;
-                }
+			unsigned int ExcluidoD = Reag.tellg();
 
-                Reag.seekg(ExcluidoD, std::ios::beg);
+			Reag.seekg(0, std::ios::end);
+			unsigned int EndReag = Reag.tellg();
 
-                TamanhoD = EndReag - ((ExcluidoD));
+			char* TempD = &Marca;
+			unsigned int TamanhoD;
 
-                bool NewUsado = false;
+			if (ExcluidoD < EndReag)
+			{
+				Reag.seekg(ExcluidoD, std::ios::beg);
 
-                for (; TamanhoD > 100; TamanhoD -= 100)
-                {
-                    TempD = new char[100];
-                    NewUsado = true;
-                    Reag.read(TempD, 100);
+				Marca = 0;
 
-                    ReagT.write(TempD, 100);
-                }
+				Reag.read(&Marca, sizeof(char));
 
-                if (NewUsado)
-                {
-                    delete[] TempD;
-                }
+				if (Marca != -1)
+				{
+					std::cout << "problema ao ler o arquivo!!\tLinha: 382\n";
+					return;
+				}
 
-                if (TamanhoD > 0)
-                {
-                    TempD = new char[TamanhoD];
-                    Reag.read(TempD, TamanhoD);
+				Reag.seekg(ExcluidoD, std::ios::beg);
 
-                    ReagT.write(TempD, TamanhoD);
+				TamanhoD = EndReag - ((ExcluidoD));
 
-                    delete[] TempD;
-                }
-            }
-        }
+				bool NewUsado = false;
 
-        Reag.close();
-        ReagT.close();
-    }
+				for (; TamanhoD > 100; TamanhoD -= 100)
+				{
+					TempD = new char[100];
+					NewUsado = true;
+					Reag.read(TempD, 100);
 
-    void WriteAntes(std::string Arq)//Limpa o Arquivo *NOME*.dat e escreve as informações do arquivo *NOME*_Antes.dat nele
-    {
-        std::fstream Reag(Arq.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
+					ReagT.write(TempD, 100);
+				}
 
-        std::fstream ReagT(ArqA.c_str(), std::ios::in | std::ios::binary);
+				if (NewUsado)
+				{
+					delete[] TempD;
+				}
 
-        if (Reag.bad() || !Reag.is_open())
-        {
-            std::cout << "Problema ao abrir o arquivo!!\tLinha: 521";
-            return;
-        }
+				if (TamanhoD > 0)
+				{
+					TempD = new char[TamanhoD];
+					Reag.read(TempD, TamanhoD);
 
-        if (ReagT.bad() || !ReagT.is_open())
-        {
-            std::cout << "Problema ao abrir o arquivo!!\tLinha: 527";
-            return;
-        }
+					ReagT.write(TempD, TamanhoD);
 
-        unsigned int Tamanho = 0;
+					delete[] TempD;
+				}
+			}
+		}
 
-        char a = ' ';
-        char* Temp = &a;
+		Reag.close();
+		ReagT.close();
+	}
 
-        ReagT.seekg(0, std::ios::end);
+	void WriteAntes(std::string Arq)//Limpa o Arquivo *NOME*.dat e escreve as informações do arquivo *NOME*_Antes.dat nele
+	{
+		std::fstream Reag(Arq.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
 
-        Tamanho = ReagT.tellg();
+		std::fstream ReagT(ArqA.c_str(), std::ios::in | std::ios::binary);
 
-        ReagT.seekg(0, std::ios::beg);
+		if (Reag.bad() || !Reag.is_open())
+		{
+			std::cout << "Problema ao abrir o arquivo!!\tLinha: 521";
+			return;
+		}
 
-        bool NewUsado = false;
+		if (ReagT.bad() || !ReagT.is_open())
+		{
+			std::cout << "Problema ao abrir o arquivo!!\tLinha: 527";
+			return;
+		}
 
-        if (Tamanho > 100)
-        {
-            Temp = new char[100];
-            NewUsado = true;
-        }
+		unsigned int Tamanho = 0;
 
-        for (; Tamanho > 100; Tamanho -= 100)
-        {
-            ReagT.read(Temp, 100);
+		char a = ' ';
+		char* Temp = &a;
 
-            Reag.write(Temp, 100);
-        }
+		ReagT.seekg(0, std::ios::end);
 
-        if (NewUsado)
-        {
-            delete[] Temp;
-        }
+		Tamanho = ReagT.tellg();
 
-        if (Tamanho > 0)
-        {
-            Temp = new char[Tamanho];
+		ReagT.seekg(0, std::ios::beg);
 
-            ReagT.read(Temp, Tamanho);
+		bool NewUsado = false;
 
-            Reag.write(Temp, Tamanho);
+		if (Tamanho > 100)
+		{
+			Temp = new char[100];
+			NewUsado = true;
+		}
 
-            delete[] Temp;
-        }
+		for (; Tamanho > 100; Tamanho -= 100)
+		{
+			ReagT.read(Temp, 100);
 
-        Reag.close();
-        ReagT.close();
-    }
+			Reag.write(Temp, 100);
+		}
 
-    void WriteDepois(std::string Arq)//Escreve as informações do arquivo *NOME*_Depois.dat ao fim do arquivo *NOME*.dat 
-    {
-        std::fstream Reag(Arq.c_str(), std::ios::out | std::ios::app | std::ios::binary);
+		if (NewUsado)
+		{
+			delete[] Temp;
+		}
 
-        std::fstream ReagT(ArqD.c_str(), std::ios::in | std::ios::binary);
+		if (Tamanho > 0)
+		{
+			Temp = new char[Tamanho];
 
-        if (Reag.bad() || !Reag.is_open())
-        {
-            std::cout << "Problema ao abrir o arquivo!!\tLinha: 576";
-            return;
-        }
+			ReagT.read(Temp, Tamanho);
 
-        if (ReagT.bad() || !ReagT.is_open())
-        {
-            std::cout << "Problema ao abrir o arquivo!!\tLinha: 582";
-            return;
-        }
+			Reag.write(Temp, Tamanho);
 
-        unsigned int Tamanho = 0;
+			delete[] Temp;
+		}
 
-        char a = ' ';
-        char* Temp = &a;
+		Reag.close();
+		ReagT.close();
+	}
 
-        ReagT.seekg(0, std::ios::end);
+	void WriteDepois(std::string Arq)//Escreve as informações do arquivo *NOME*_Depois.dat ao fim do arquivo *NOME*.dat 
+	{
+		std::fstream Reag(Arq.c_str(), std::ios::out | std::ios::app | std::ios::binary);
 
-        Tamanho = ReagT.tellg();
+		std::fstream ReagT(ArqD.c_str(), std::ios::in | std::ios::binary);
 
-        ReagT.seekg(0, std::ios::beg);
+		if (Reag.bad() || !Reag.is_open())
+		{
+			std::cout << "Problema ao abrir o arquivo!!\tLinha: 576";
+			return;
+		}
 
-        bool NewUsado = false;
+		if (ReagT.bad() || !ReagT.is_open())
+		{
+			std::cout << "Problema ao abrir o arquivo!!\tLinha: 582";
+			return;
+		}
 
-        if (Tamanho > 100)
-        {
-            Temp = new char[100];
-            NewUsado = true;
-        }
+		unsigned int Tamanho = 0;
 
-        for (; Tamanho > 100; Tamanho -= 100)
-        {
-            ReagT.read(Temp, 100);
+		char a = ' ';
+		char* Temp = &a;
 
-            Reag.write(Temp, 100);
-        }
+		ReagT.seekg(0, std::ios::end);
 
-        if (NewUsado)
-        {
-            delete[] Temp;
-        }
+		Tamanho = ReagT.tellg();
 
-        if (Tamanho > 0)
-        {
-            Temp = new char[Tamanho];
+		ReagT.seekg(0, std::ios::beg);
 
-            ReagT.read(Temp, Tamanho);
+		bool NewUsado = false;
 
-            Reag.write(Temp, Tamanho);
+		if (Tamanho > 100)
+		{
+			Temp = new char[100];
+			NewUsado = true;
+		}
 
-            delete[] Temp;
-        }
+		for (; Tamanho > 100; Tamanho -= 100)
+		{
+			ReagT.read(Temp, 100);
 
-        Reag.close();
-        ReagT.close();
-    }
+			Reag.write(Temp, 100);
+		}
 
-    void PrintInfo(int Lugar)
-    {
-        std::fstream Reag(Arq, std::ios::in | std::ios::binary);
-        std::fstream ReagMin(ArqMi, std::ios::in | std::ios::binary);
+		if (NewUsado)
+		{
+			delete[] Temp;
+		}
 
-        Reag.seekg(Lugar, std::ios::beg);
+		if (Tamanho > 0)
+		{
+			Temp = new char[Tamanho];
 
-        int LugarMin = 0;
+			ReagT.read(Temp, Tamanho);
 
-        while (Reag.tellg() < Lugar - 1)
-        {
-            char Marca = 0;
+			Reag.write(Temp, Tamanho);
 
-            Reag.read(&Marca, sizeof(char));
+			delete[] Temp;
+		}
 
-            if (Marca != -1)
-                std::cout << "Problema ao ler o arquivo\tLinha: 441\n";
+		Reag.close();
+		ReagT.close();
+	}
 
-            LugarMin++;
-            unsigned int NomeSize;
-            Reag.read((char*)&NomeSize, sizeof(unsigned int));
-            Reag.seekg(NomeSize + (sizeof(float) * 2) + (sizeof(int) * 4), std::ios::cur);
-        }
+	void PrintInfo(int Lugar)
+	{
+		std::fstream Reag(Arq, std::ios::in | std::ios::binary);
+		std::fstream ReagMin(ArqMi, std::ios::in | std::ios::binary);
 
-        LugarMin *= sizeof(char) + sizeof(float);
+		Reag.seekg(Lugar, std::ios::beg);
 
-        char Marca;
-        Reag.read(&Marca, sizeof(char));
+		int LugarMin = 0;
 
-        if (Marca != -1)
-            std::cout << "Problemas ao ler o arquivo!!!\tLinha: 1667";
+		while (Reag.tellg() < Lugar - 1)
+		{
+			char Marca = 0;
 
-        ReagMin.read(&Marca, sizeof(char));
+			Reag.read(&Marca, sizeof(char));
 
-        float Peso, PesoC, PesoMin;
-        int Dia, Mes, Ano, Alerta, NomeSize;
+			if (Marca != -1)
+				std::cout << "Problema ao ler o arquivo\tLinha: 441\n";
 
-        Reag.read((char*)&NomeSize, sizeof(int));
+			LugarMin++;
+			unsigned int NomeSize;
+			Reag.read((char*)&NomeSize, sizeof(unsigned int));
+			Reag.seekg(NomeSize + (sizeof(float) * 2) + (sizeof(int) * 4), std::ios::cur);
+		}
 
-        char* NomeReag = new char[NomeSize + 1];
+		LugarMin *= sizeof(char) + sizeof(float);
 
-        Reag.read(NomeReag, NomeSize);
-        Reag.read((char*)&Peso, sizeof(float));
-        Reag.read((char*)&PesoC, sizeof(float));
-        Reag.read((char*)&Dia, sizeof(int));
-        Reag.read((char*)&Mes, sizeof(int));
-        Reag.read((char*)&Ano, sizeof(int));
-        Reag.read((char*)&Alerta, sizeof(int));
-        ReagMin.read((char*)&PesoMin, sizeof(float));
+		char Marca;
+		Reag.read(&Marca, sizeof(char));
 
-        NomeReag[NomeSize] = '\0';
+		if (Marca != -1)
+			std::cout << "Problemas ao ler o arquivo!!!\tLinha: 1667";
 
-        std::cout << '\n' << NomeReag << "\nTotal: " << std::setw(14) << std::left << Peso << "Container: " <<  PesoC << "\nPeso minimo: " << PesoMin << "\nValidade: " << Dia << " / " << Mes << " / " << Ano << "\nALerta : " << Alerta << '\n';
+		ReagMin.read(&Marca, sizeof(char));
 
-        delete[] NomeReag;
-    }
+		float Peso, PesoC, PesoMin;
+		int Dia, Mes, Ano, Alerta, NomeSize;
+
+		Reag.read((char*)&NomeSize, sizeof(int));
+
+		char* NomeReag = new char[NomeSize + 1];
+
+		Reag.read(NomeReag, NomeSize);
+		Reag.read((char*)&Peso, sizeof(float));
+		Reag.read((char*)&PesoC, sizeof(float));
+		Reag.read((char*)&Dia, sizeof(int));
+		Reag.read((char*)&Mes, sizeof(int));
+		Reag.read((char*)&Ano, sizeof(int));
+		Reag.read((char*)&Alerta, sizeof(int));
+		ReagMin.read((char*)&PesoMin, sizeof(float));
+
+		NomeReag[NomeSize] = '\0';
+
+		std::cout << '\n' << NomeReag << "\nTotal: " << std::setw(14) << std::left << Peso << "Container: " << PesoC << "\nPeso minimo: " << PesoMin << "\nValidade: " << Dia << " / " << Mes << " / " << Ano << "\nALerta : " << Alerta << '\n';
+
+		delete[] NomeReag;
+	}
 };
 
 void Loop()
 {
-    std::string Comando;
-
-    std::cout << "Digite o nome da Lista que deseja ver!!\n> ";
-
-    std::getline(std::cin, Comando);
-
-    Reagentes Reag(Comando);
-
-    Reag.PesoAtual = Reag.PesoSalvo;
-    
-    while (true)
-    {
-        Reag.VerificarPeso();
-        //solução temporaria!!
-
-        std::cout << "\n\n--------------------\n\nCaso necessite de ajuda escreva \"ajuda\"\n\n> ";
-
-        std::getline(std::cin, Comando);
-
-        if (Comando == "Ajuda" || Comando == "ajuda")
-        {
-            std::cout <<    "\n\nOs comandos sao:\n" <<
-                            "Criar\n" <<
-                            "Remover\n" <<
-                            "Alterar Nome\n" <<
-                            "Alterar Peso\n" <<
-                            "Alterar Minimo\n" <<
-                            "Alterar Validade\n" <<
-                            "Alterar Alerta\n" <<
-                            "Ver Nomes\n" <<
-                            "Ver Tudo\n" <<
-                            "Pesquisar Especifico (pesquisa apartir do Nome, Peso ou Validade)\n" <<
-                            "Verificar Validade\n" <<
-                            "Verificar Minimo\n" <<
-                            "Ver Mudancas\n" <<
-                            "Ver Historico\n" <<
-                            "Confirmar Mudancas\n" <<
-                            "Limpar Historico\n" <<
-                            "Sair\n\n\n";
-            
-            std::cout << "Digite qualquer coisa para sair:\n> ";
-            std::getline(std::cin, Comando);
-
-            continue;
-        }
-
-        if (Comando == "Sair" || Comando == "sair")
-        {
-            std::cout << "\n\nCerteza que deseja fechar o programa? (S/N)\n> ";
-
-            std::getline(std::cin, Comando);
-
-            if (Comando == "S" || Comando == "s")
-                break;
-            else
-                continue;
-        }
-
-        if (Comando == "Criar" || Comando == "criar")
-        {
-            while (true)
-            {
-                std::cout << "\n\nDigite o nome, Caso queira sair digite \"Sair\":\n> ";
-                std::getline(std::cin, Comando);
-
-                if (Comando == "Sair" || Comando == "sair")
-                    break;
-
-                std::string Nome;
-                int Dia, Mes, Ano, Alerta;
-                float Peso, PesoC, PesoMin,Temp;
-                Temp = 0;
-
-                Nome = Comando + '\0';
-
-                std::cout << "\nDigite o Peso:\n> ";
-                std::getline(std::cin, Comando);
-
-                while (!ValidadeInput(Comando))
-                {
-                    std::cout << "\nINPUT INVALIDO!! Tente Novamente\n";
-
-                    std::cout << "> ";
-                    std::getline(std::cin, Comando);
-                }
-                ValidadeInput(Comando, Peso);
-
-                std::cout << "\nDigite o Peso do container:\n> ";
-                std::getline(std::cin, Comando);
-
-                while (true)
-                {
-                    if (ValidadeInput(Comando))
-                    {
-                        ValidadeInput(Comando, PesoC);
-
-                        if (PesoC > Peso)
-                            Comando = "a";
-                        else
-                            break;
-                    }
-
-                    std::cout << "\nINPUT INVALIDO!! Tente Novamente\n";
-
-                    std::cout << "> ";
-                    std::getline(std::cin, Comando);
-                }
-                ValidadeInput(Comando, PesoC);
-
-                std::cout << "\nDigite o Peso minimo:\n> ";
-                std::getline(std::cin, Comando);
-
-                while (!ValidadeInput(Comando))
-                {
-                    std::cout << "\nINPUT INVALIDO!! Tente Novamente\n";
-
-                    std::cout << "> ";
-                    std::getline(std::cin, Comando);
-                }
-                ValidadeInput(Comando, PesoMin);
-
-                std::cout << "\nDigite a data de Validade(dia, mes e ano, apertando enter entre eles):\n> ";
-
-                std::getline(std::cin, Comando);
-                while (true)
-                {
-                    if (ValidadeInput(Comando))
-                    {
-                        ValidadeInput(Comando, Temp);
-
-                        if (Temp > 0 && Temp < 32)
-                            break;
-                        else
-                            Comando = "a";
-                    }
-
-                    std::cout << "\nINPUT INVALIDO!! Tente Novamente\n";
-
-                    std::cout << "> ";
-                    std::getline(std::cin, Comando);
-                }
-                Dia = Temp;
-
-                std::cout << "> ";
-                std::getline(std::cin, Comando);
-                while (true)
-                {
-                    if (ValidadeInput(Comando))
-                    {
-                        ValidadeInput(Comando, Temp);
-
-                        if (Temp > 0 && Temp < 13)
-                            break;
-                        else
-                            Comando = "a";
-                    }
-
-                    std::cout << "\nINPUT INVALIDO!! Tente Novamente\n";
-
-                    std::cout << "> ";
-                    std::getline(std::cin, Comando);
-                }
-                Mes = Temp;
-
-                std::cout << "> ";
-                std::getline(std::cin, Comando);
-                while (!ValidadeInput(Comando))
-                {
-                    std::cout << "\nINPUT INVALIDO!! Tente Novamente\n";
-
-                    std::cout << "> ";
-                    std::getline(std::cin, Comando);
-                }
-                ValidadeInput(Comando, Temp);
-                Ano = Temp;
-
-                std::cout << "\nDigite o Alerta(a prioridade para alertar)\n> ";
-                std::getline(std::cin, Comando);
-                while (true)
-                {
-                    if (ValidadeInput(Comando))
-                    {
-                        ValidadeInput(Comando, Temp);
-
-                        if (Temp > NumeroAlertas)
-                            Comando == "a";
-                        else
-                            break;
-                    }
-
-                    std::cout << "\nINPUT INVALIDO!! Tente Novamente\n";
-
-                    std::cout << "> ";
-                    std::getline(std::cin, Comando);
-                }
-                Alerta = Temp;
-                
-                //SUPER TEMPORARIO APAGUE POR FAVOR HORA QUE FOR MANDAR
-                Reag.PesoAtual += Peso;
-
-                Reag.CriarReagente(Nome, Peso, PesoC, PesoMin, Dia, Mes, Ano, Alerta);
-            }
-            continue;
-        }
-
-        if (Comando == "Remover" || Comando == "remover")
-        {
-            while (true)
-            {
-                std::cout << "\n\nDigite o nome do reagente que deseja Remover, cso queira sair digite \"Sair\":\n> ";
-                std::getline(std::cin, Comando);
-                
-                if (Comando == "Sair" || Comando == "sair")
-                    break;
-
-                Reag.RemoverReagente(Comando);
-            }
-
-            continue;
-        }
-
-        if (Comando == "Alterar Nome" || Comando == "Alterar nome" || Comando == "alterar nome")
-        {
-            while (true)
-            {
-                std::cout << "\n\nDigite o nome do reagente que deseja trocar Nome e Depois o Novo Nome, cso queira sair digite \"Sair\":\n> ";
-                std::getline(std::cin, Comando);
-
-                if (Comando == "Sair" || Comando == "sair")
-                    break;
-
-                std::string NomeAnt = Comando;
-
-                std::cout << "\n> ";
-                std::getline(std::cin, Comando);
-
-                Reag.TrocarNome(NomeAnt, Comando);
-            }
-
-            continue;
-        }
-
-        if (Comando == "Alterar Peso" || Comando == "Alterar peso" || Comando == "alterar peso")
-        {
-            while (true)
-            {
-                std::cout << "\n\nDigite o nome do reagente que deseja trocar o Peso e Depois o Novo Peso e o Novo peso do container, caso queira sair digite \"Sair\":\n> ";
-                std::getline(std::cin, Comando);
-
-                if (Comando == "Sair" || Comando == "sair")
-                    break;
-
-                std::string Nome = Comando;
-
-                std::cout << "\n> ";
-                std::getline(std::cin, Comando);
-
-                while (!ValidadeInput(Comando))
-                {
-                    std::cout << "\nINPUT INVALIDO!! Tente Novamente\n";
-
-                    std::cout << "> ";
-                    std::getline(std::cin, Comando);
-                }
-
-                float NovoPeso;
-                ValidadeInput(Comando, NovoPeso);
-
-
-                std::cout << "> ";
-                std::getline(std::cin, Comando);
-                float NovoPesoC;
-                while (true)
-                {
-                    if (ValidadeInput(Comando))
-                    {
-                        ValidadeInput(Comando, NovoPesoC);
-
-                        if (NovoPesoC <= NovoPeso)
-                            break;                            
-                    }
-
-                    std::cout << "\nINPUT INVALIDO!! Tente Novamente\n";
-
-                    std::cout << "> ";
-                    std::getline(std::cin, Comando);               
-                }
-                
-                Reag.TrocarPeso(Nome, NovoPeso, NovoPesoC);
-            }
-
-            continue;
-        }
-
-        if (Comando == "Alterar Minimo" || Comando == "Alterar minimo" || Comando == "alterar minimo")
-        {
-            while (true)
-            {
-                std::cout << "\n\nDigite o nome do reagente o novo peso minimo, caso queira sair digite \"Sair\":\n> ";
-                std::getline(std::cin, Comando);
-
-                if (Comando == "Sair" || Comando == "sair")
-                    break;
-
-                std::string Nome = Comando;
-
-                std::cout << "\n> ";
-                std::getline(std::cin, Comando);
-
-                while (!ValidadeInput(Comando))
-                {
-                    std::cout << "\nINPUT INVALIDO!! Tente Novamente\n";
-
-                    std::cout << "> ";
-                    std::getline(std::cin, Comando);
-                }
-
-                float NovoPeso;
-                ValidadeInput(Comando, NovoPeso);
-
-                Reag.TrocarPesoMin(Nome, NovoPeso);
-            }
-
-            continue;
-        }
-
-        if (Comando == "Alterar Validade" || Comando == "Alterar validade" || Comando == "alterar validade")
-        {
-            while (true)
-            {
-                std::cout << "\n\nDigite o nome do reagente que deseja trocar a validade, digite o dia, mes e ano apertando enter entre  eles, caso queira sair digite \"Sair\":\n> ";
-                std::getline(std::cin, Comando);
-
-                if (Comando == "Sair" || Comando == "sair")
-                    break;
-
-                std::string NomeAnt = Comando;
-
-
-                float Temp = 0;
-
-                std::cout << "> ";
-                std::getline(std::cin, Comando);
-                while (true)
-                {
-                    if (ValidadeInput(Comando))
-                    {
-                        ValidadeInput(Comando, Temp);
-
-                        if (Temp > 0 && Temp < 32)
-                            break;
-                        else
-                            Comando = "a";
-                    }
-
-                    std::cout << "\nINPUT INVALIDO!! Tente Novamente\n";
-
-                    std::cout << "> ";
-                    std::getline(std::cin, Comando);
-                }
-                int Dia = Temp;
-
-                std::cout << "> ";
-                std::getline(std::cin, Comando);
-                while (true)
-                {
-                    if (ValidadeInput(Comando))
-                    {
-                        ValidadeInput(Comando, Temp);
-
-                        if (Temp > 0 && Temp < 13)
-                            break;
-                        else
-                            Comando = "a";
-                    }
-                    std::cout << "\n\nINPUT INVALIDO!! Tente Novamente\n";
-
-                    std::cout << "\n> ";
-                    std::getline(std::cin, Comando);
-                }
-                int Mes = Temp;
-
-                std::cout << "> ";
-                std::getline(std::cin, Comando);
-                while (!ValidadeInput(Comando))
-                {
-                    std::cout << "\nINPUT INVALIDO!! Tente Novamente\n";
-
-                    std::cout << "> ";
-                    std::getline(std::cin, Comando);
-                }
-                ValidadeInput(Comando, Temp);
-                int Ano = Temp;
-
-                Reag.TrocarValidade(NomeAnt, Dia, Mes, Ano);
-            }
-            continue;
-        }
-
-        if (Comando == "Alterar Alerta" || Comando == "Alterar alerta" || Comando == "alterar alerta")
-        {
-            while (true)
-            {
-                std::cout << "\n\nDigite o nome do reagente e o novo alertas, caso queira sair digite \"Sair\":\n> ";
-                std::getline(std::cin, Comando);
-
-                if (Comando == "Sair" || Comando == "sair")
-                    break;
-
-                std::string NomeAnt = Comando;
-
-                std::cout << "\n> ";
-                std::getline(std::cin, Comando);
-
-                float Temp;
-
-                while (true)
-                {
-                    if (ValidadeInput(Comando))
-                    {
-                        ValidadeInput(Comando, Temp);
-
-                        if (Temp >= 0 && Temp < NumeroAlertas)
-                            break;
-                        else
-                            Comando = "a";
-                    }
-
-                    std::cout << "\n\nINPUT INVALIDO!! Tente Novamente\n";
-
-                    std::cout << "\n> ";
-                    std::getline(std::cin, Comando);
-
-                }
-
-                int NovoAlerta = Temp;
-
-                Reag.TrocarAlerta(NomeAnt, NovoAlerta);
-            }
-            continue;
-        }
-
-        if (Comando == "Ver Nomes" || Comando == "Ver nomes" || Comando == "ver nomes")
-        {
-            Reag.PrintNomes();
-            
-            std::cout << "\n\nDigite qualquer coisa para sair:\n> ";
-            std::getline(std::cin, Comando);
-
-            continue;
-        }
-
-        if (Comando == "Ver Tudo" || Comando == "Ver tudo" || Comando == "ver tudo")
-        {
-            Reag.PrintInfos();
-
-            std::cout << "\n\nDigite qualquer coisa para sair:\n> ";
-            std::getline(std::cin, Comando);
-
-            continue;
-        }
-
-        if (Comando == "Pesquisar Especifico" || Comando == "Pesquisar especifico" || Comando == "pesquisar especifico")
-        {
-            while (true)
-            {
-                std::cout << "\n\nDeseja pesquisar pelo que? Nome, Peso, Validade. Caso queira sair digite \"Sair\":\n> ";
-                std::getline(std::cin, Comando);
-
-                if (Comando == "Sair" || Comando == "sair")
-                    break;
-
-                if (Comando == "Nome" || Comando == "nome")
-                {
-                    std::cout << "\nQual nome pesquisar?:\n> ";
-                    std::getline(std::cin, Comando);
-
-                    Reag.PrintEspecifico(Comando);
-
-                    continue;
-                }
-
-                if (Comando == "Peso" || Comando == "peso")
-                {
-                    std::cout << "\nDigite o peso total(reagente mais container) pelo qual procurar:\n> ";
-
-                    std::getline(std::cin, Comando);
-
-                    while (!ValidadeInput(Comando))
-                    {
-                        std::cout << "\nINPUT INVALIDO!! Tente Novamente\n";
-
-                        std::cout << "> ";
-                        std::getline(std::cin, Comando);
-                    }
-
-                    float Temp;
-
-                    ValidadeInput(Comando, Temp);
-
-                    Reag.PrintEspecifico(Temp);
-
-                    continue;
-                }
-
-                if (Comando == "Validade" || Comando == "validade")
-                {
-                    std::cout << "\nDigite a validade que deseja pesquisar(mes e ano, aperte enter entre eles)\n> ";
-                    std::getline(std::cin, Comando);
-
-                    float Temp;
-
-                    while (true)
-                    {
-                        if (ValidadeInput(Comando))
-                        {
-                            ValidadeInput(Comando, Temp);
-
-                            if (Temp > 0 && Temp < 13)
-                                break;
-                            else
-                                Comando = "a";
-                        }
-
-                        std::cout << "\nINPUT INVALIDO!! Tente Novamente\n";
-
-                        std::cout << "> ";
-                        std::getline(std::cin, Comando);
-                    }
-                    int Mes = Temp;
-
-                    std::cout << "> ";
-                    std::getline(std::cin, Comando);
-
-                    while (!ValidadeInput(Comando))
-                    {
-                        std::cout << "\nINPUT INVALIDO!! Tente Novamente\n";
-
-                        std::cout << "> ";
-                        std::getline(std::cin, Comando);
-                    }
-                    ValidadeInput(Comando, Temp);
-                    int Ano = Temp;
-
-                    Reag.PrintEspecifico(Mes, Ano);
-
-                    continue;
-                }
-            }
-            continue;
-        }
-
-        if (Comando == "Verificar Validade" || Comando == "Verificar validade" || Comando == "verificar validade")
-        {
-            std::cout << "\n\nDigite o alerta minimo(0 para mostrar todos os reagentes vencido)\n> ";
-
-            std::getline(std::cin, Comando);
-
-            float Temp;
-
-            while (true)
-            {
-                if (ValidadeInput(Comando))
-                {
-                    ValidadeInput(Comando, Temp);
-
-                    if (Temp >= 0 && Temp < NumeroAlertas)
-                        break;
-                    else
-                        Comando = "a";
-                }
-
-                std::cout << "\nINPUT INVALIDO!!\n";
-                std::cout << "> ";
-                std::getline(std::cin, Comando);
-            }
-            int Alerta = Temp;
-
-            Reag.ChecarValidade();
-            Reag.PrintValidade(Alerta);
-
-            std::cout << "\nDigite qualquer coisa para sair:\n> ";
-            std::getline(std::cin, Comando);
-
-            continue;
-        }
-
-        if (Comando == "Verificar Minimo" || Comando == "Verificar minimo" || Comando == "verificar minimo")
-        {
-            std::cout << "\n\nDigite o alerta minimo(0 para mostrar todos os reagentes vencido)\n> ";
-
-            std::getline(std::cin, Comando);
-
-            float Temp;
-
-            while (true)
-            {
-                if (ValidadeInput(Comando))
-                {
-                    ValidadeInput(Comando, Temp);
-
-                    if (Temp >= 0 && Temp < NumeroAlertas)
-                        break;
-                    else
-                        Comando = "a";
-                }
-
-                std::cout << "\nINPUT INVALIDO!!\n";
-                std::cout << "> ";
-                std::getline(std::cin, Comando);
-            }
-            int Alerta = Temp;
-
-            Reag.PrintMin(Alerta);
-
-            continue;
-        }
-
-        if (Comando == "Ver Mudancas" || Comando == "Ver mudancas" || Comando == "ver mudancas")
-        {
-            Reag.SalvarAlteração();
-            Reag.PrintAlterados();
-            
-             std::cout << "\n\nDigite qualquer coisa para sair:\n> ";
-            std::getline(std::cin, Comando);
-
-            continue;
-        }
-
-        if (Comando == "Ver Historico" || Comando == "Ver historico" || Comando == "ver historico")
-        {
-            Reag.PrintHistorico();
-
-            std::cout << "\n\nDigite qualquer coisa para sair:\n> ";
-            std::getline(std::cin, Comando);
-
-            continue;
-        }
-
-        if (Comando == "Confirmar Mudancas" || Comando == "Confirmar mudancas" || Comando == "confirmar mudancas")
-        {
-            std::cout << "\n\nTem certeza que deseja marcar como verificado? (Ainda sera possivel verificar as mudancas porem com menos detalhes e estarao todas juntas), (digite sim para confirmar)\n> ";
-            std::getline(std::cin, Comando);
-
-            if(Comando == "Sim" || Comando == "sim")
-                Reag.ConfirmarAlteração();
-
-            continue;
-        }
-
-        if (Comando == "Limpar Historico" || Comando == "Limpar historico" || Comando == "limpar historico")
-        {
-            Reag.LimparHistorico();
-
-            continue;
-        }
-
-        if (Comando == "Mudar A" || Comando == "Mudar a" || Comando == "mudar a")
-        {
-            std::cout << "\n\nPeso Atual\n> ";
-            std::getline(std::cin, Comando);
-
-            while (!ValidadeInput(Comando))
-            {
-                std::cout << "\nINPUT INVALIDO!! Tente Novamente\n";
-
-                std::cout << "> ";
-                std::getline(std::cin, Comando);
-            }
-
-            float NovoPeso;
-            ValidadeInput(Comando, NovoPeso);
-
-            Reag.PesoAtual = NovoPeso;
-
-            continue;
-        }
-
-        if (Comando == "Mudar S" || Comando == "Mudar s" || Comando == "mudar s")
-        {
-            std::cout << "\n\nPeso Salvo\n> ";
-            std::getline(std::cin, Comando);
-
-            while (!ValidadeInput(Comando))
-            {
-                std::cout << "\nINPUT INVALIDO!! Tente Novamente\n";
-
-                std::cout << "> ";
-                std::getline(std::cin, Comando);
-            }
-
-            float NovoPeso;
-            ValidadeInput(Comando, NovoPeso);
-
-            Reag.PesoSalvo = NovoPeso;
-
-            continue;
-        }
-
-        if (Comando == "Pesos" || Comando == "pesos")
-        {
-            std::cout << "\nSalvo: " << Reag.PesoSalvo << "\nPeso Medido(atual): " << Reag.PesoAtual << '\n';
-
-            std::cout << "\n\nDigite qualquer coisa para sair:\n> ";
-            std::getline(std::cin, Comando);
-
-            continue;
-        }
-
-        std::cout << "\nCOMANDO NAO EXISTE!!!\n";
-    }
+	std::string Comando;
+
+	std::cout << "Digite o nome da Lista que deseja ver!!\n> ";
+
+	std::getline(std::cin, Comando);
+
+	Reagentes Reag(Comando);
+
+	Reag.PesoAtual = Reag.PesoSalvo;
+
+	while (true)
+	{
+		Reag.VerificarPeso();
+		//solução temporaria!!
+
+		std::cout << "\n\n--------------------\n\nCaso necessite de ajuda escreva \"ajuda\"\n\n> ";
+
+		std::getline(std::cin, Comando);
+
+		if (Comando == "Ajuda" || Comando == "ajuda")
+		{
+			std::cout << "\n\nOs comandos sao:\n" <<
+				"Criar\n" <<
+				"Remover\n" <<
+				"Alterar Nome\n" <<
+				"Alterar Peso\n" <<
+				"Alterar Minimo\n" <<
+				"Alterar Validade\n" <<
+				"Alterar Alerta\n" <<
+				"Ver Nomes\n" <<
+				"Ver Tudo\n" <<
+				"Pesquisar Especifico (pesquisa apartir do Nome, Peso ou Validade)\n" <<
+				"Verificar Validade\n" <<
+				"Verificar Minimo\n" <<
+				"Ver Mudancas\n" <<
+				"Ver Historico\n" <<
+				"Confirmar Mudancas\n" <<
+				"Limpar Historico\n" <<
+				"Sair\n\n\n";
+
+			std::cout << "Digite qualquer coisa para sair:\n> ";
+			std::getline(std::cin, Comando);
+
+			continue;
+		}
+
+		if (Comando == "Sair" || Comando == "sair")
+		{
+			std::cout << "\n\nCerteza que deseja fechar o programa? (S/N)\n> ";
+
+			std::getline(std::cin, Comando);
+
+			if (Comando == "S" || Comando == "s")
+				break;
+			else
+				continue;
+		}
+
+		if (Comando == "Criar" || Comando == "criar")
+		{
+			while (true)
+			{
+				std::cout << "\n\nDigite o nome, Caso queira sair digite \"Sair\":\n> ";
+				std::getline(std::cin, Comando);
+
+				if (Comando == "Sair" || Comando == "sair")
+					break;
+
+				std::string Nome;
+				int Dia, Mes, Ano, Alerta;
+				float Peso, PesoC, PesoMin, Temp;
+				Temp = 0;
+
+				Nome = Comando + '\0';
+
+				std::cout << "\nDigite o Peso:\n> ";
+				std::getline(std::cin, Comando);
+
+				while (!ValidadeInput(Comando))
+				{
+					std::cout << "\nINPUT INVALIDO!! Tente Novamente\n";
+
+					std::cout << "> ";
+					std::getline(std::cin, Comando);
+				}
+				ValidadeInput(Comando, Peso);
+
+				std::cout << "\nDigite o Peso do container:\n> ";
+				std::getline(std::cin, Comando);
+
+				while (true)
+				{
+					if (ValidadeInput(Comando))
+					{
+						ValidadeInput(Comando, PesoC);
+
+						if (PesoC > Peso)
+							Comando = "a";
+						else
+							break;
+					}
+
+					std::cout << "\nINPUT INVALIDO!! Tente Novamente\n";
+
+					std::cout << "> ";
+					std::getline(std::cin, Comando);
+				}
+				ValidadeInput(Comando, PesoC);
+
+				std::cout << "\nDigite o Peso minimo:\n> ";
+				std::getline(std::cin, Comando);
+
+				while (!ValidadeInput(Comando))
+				{
+					std::cout << "\nINPUT INVALIDO!! Tente Novamente\n";
+
+					std::cout << "> ";
+					std::getline(std::cin, Comando);
+				}
+				ValidadeInput(Comando, PesoMin);
+
+				std::cout << "\nDigite a data de Validade(dia, mes e ano, apertando enter entre eles):\n> ";
+
+				std::getline(std::cin, Comando);
+				while (true)
+				{
+					if (ValidadeInput(Comando))
+					{
+						ValidadeInput(Comando, Temp);
+
+						if (Temp > 0 && Temp < 32)
+							break;
+						else
+							Comando = "a";
+					}
+
+					std::cout << "\nINPUT INVALIDO!! Tente Novamente\n";
+
+					std::cout << "> ";
+					std::getline(std::cin, Comando);
+				}
+				Dia = Temp;
+
+				std::cout << "> ";
+				std::getline(std::cin, Comando);
+				while (true)
+				{
+					if (ValidadeInput(Comando))
+					{
+						ValidadeInput(Comando, Temp);
+
+						if (Temp > 0 && Temp < 13)
+							break;
+						else
+							Comando = "a";
+					}
+
+					std::cout << "\nINPUT INVALIDO!! Tente Novamente\n";
+
+					std::cout << "> ";
+					std::getline(std::cin, Comando);
+				}
+				Mes = Temp;
+
+				std::cout << "> ";
+				std::getline(std::cin, Comando);
+				while (!ValidadeInput(Comando))
+				{
+					std::cout << "\nINPUT INVALIDO!! Tente Novamente\n";
+
+					std::cout << "> ";
+					std::getline(std::cin, Comando);
+				}
+				ValidadeInput(Comando, Temp);
+				Ano = Temp;
+
+				std::cout << "\nDigite o Alerta(a prioridade para alertar)\n> ";
+				std::getline(std::cin, Comando);
+				while (true)
+				{
+					if (ValidadeInput(Comando))
+					{
+						ValidadeInput(Comando, Temp);
+
+						if (Temp > NumeroAlertas)
+							Comando == "a";
+						else
+							break;
+					}
+
+					std::cout << "\nINPUT INVALIDO!! Tente Novamente\n";
+
+					std::cout << "> ";
+					std::getline(std::cin, Comando);
+				}
+				Alerta = Temp;
+
+				//SUPER TEMPORARIO APAGUE POR FAVOR HORA QUE FOR MANDAR
+				Reag.PesoAtual += Peso;
+
+				Reag.CriarReagente(Nome, Peso, PesoC, PesoMin, Dia, Mes, Ano, Alerta);
+			}
+			continue;
+		}
+
+		if (Comando == "Remover" || Comando == "remover")
+		{
+			while (true)
+			{
+				std::cout << "\n\nDigite o nome do reagente que deseja Remover, cso queira sair digite \"Sair\":\n> ";
+				std::getline(std::cin, Comando);
+
+				if (Comando == "Sair" || Comando == "sair")
+					break;
+
+				Reag.RemoverReagente(Comando);
+			}
+
+			continue;
+		}
+
+		if (Comando == "Alterar Nome" || Comando == "Alterar nome" || Comando == "alterar nome")
+		{
+			while (true)
+			{
+				std::cout << "\n\nDigite o nome do reagente que deseja trocar Nome e Depois o Novo Nome, cso queira sair digite \"Sair\":\n> ";
+				std::getline(std::cin, Comando);
+
+				if (Comando == "Sair" || Comando == "sair")
+					break;
+
+				std::string NomeAnt = Comando;
+
+				std::cout << "\n> ";
+				std::getline(std::cin, Comando);
+
+				Reag.TrocarNome(NomeAnt, Comando);
+			}
+
+			continue;
+		}
+
+		if (Comando == "Alterar Peso" || Comando == "Alterar peso" || Comando == "alterar peso")
+		{
+			while (true)
+			{
+				std::cout << "\n\nDigite o nome do reagente que deseja trocar o Peso e Depois o Novo Peso e o Novo peso do container, caso queira sair digite \"Sair\":\n> ";
+				std::getline(std::cin, Comando);
+
+				if (Comando == "Sair" || Comando == "sair")
+					break;
+
+				std::string Nome = Comando;
+
+				std::cout << "\n> ";
+				std::getline(std::cin, Comando);
+
+				while (!ValidadeInput(Comando))
+				{
+					std::cout << "\nINPUT INVALIDO!! Tente Novamente\n";
+
+					std::cout << "> ";
+					std::getline(std::cin, Comando);
+				}
+
+				float NovoPeso;
+				ValidadeInput(Comando, NovoPeso);
+
+
+				std::cout << "> ";
+				std::getline(std::cin, Comando);
+				float NovoPesoC;
+				while (true)
+				{
+					if (ValidadeInput(Comando))
+					{
+						ValidadeInput(Comando, NovoPesoC);
+
+						if (NovoPesoC <= NovoPeso)
+							break;
+					}
+
+					std::cout << "\nINPUT INVALIDO!! Tente Novamente\n";
+
+					std::cout << "> ";
+					std::getline(std::cin, Comando);
+				}
+
+				Reag.TrocarPeso(Nome, NovoPeso, NovoPesoC);
+			}
+
+			continue;
+		}
+
+		if (Comando == "Alterar Minimo" || Comando == "Alterar minimo" || Comando == "alterar minimo")
+		{
+			while (true)
+			{
+				std::cout << "\n\nDigite o nome do reagente o novo peso minimo, caso queira sair digite \"Sair\":\n> ";
+				std::getline(std::cin, Comando);
+
+				if (Comando == "Sair" || Comando == "sair")
+					break;
+
+				std::string Nome = Comando;
+
+				std::cout << "\n> ";
+				std::getline(std::cin, Comando);
+
+				while (!ValidadeInput(Comando))
+				{
+					std::cout << "\nINPUT INVALIDO!! Tente Novamente\n";
+
+					std::cout << "> ";
+					std::getline(std::cin, Comando);
+				}
+
+				float NovoPeso;
+				ValidadeInput(Comando, NovoPeso);
+
+				Reag.TrocarPesoMin(Nome, NovoPeso);
+			}
+
+			continue;
+		}
+
+		if (Comando == "Alterar Validade" || Comando == "Alterar validade" || Comando == "alterar validade")
+		{
+			while (true)
+			{
+				std::cout << "\n\nDigite o nome do reagente que deseja trocar a validade, digite o dia, mes e ano apertando enter entre  eles, caso queira sair digite \"Sair\":\n> ";
+				std::getline(std::cin, Comando);
+
+				if (Comando == "Sair" || Comando == "sair")
+					break;
+
+				std::string NomeAnt = Comando;
+
+
+				float Temp = 0;
+
+				std::cout << "> ";
+				std::getline(std::cin, Comando);
+				while (true)
+				{
+					if (ValidadeInput(Comando))
+					{
+						ValidadeInput(Comando, Temp);
+
+						if (Temp > 0 && Temp < 32)
+							break;
+						else
+							Comando = "a";
+					}
+
+					std::cout << "\nINPUT INVALIDO!! Tente Novamente\n";
+
+					std::cout << "> ";
+					std::getline(std::cin, Comando);
+				}
+				int Dia = Temp;
+
+				std::cout << "> ";
+				std::getline(std::cin, Comando);
+				while (true)
+				{
+					if (ValidadeInput(Comando))
+					{
+						ValidadeInput(Comando, Temp);
+
+						if (Temp > 0 && Temp < 13)
+							break;
+						else
+							Comando = "a";
+					}
+					std::cout << "\n\nINPUT INVALIDO!! Tente Novamente\n";
+
+					std::cout << "\n> ";
+					std::getline(std::cin, Comando);
+				}
+				int Mes = Temp;
+
+				std::cout << "> ";
+				std::getline(std::cin, Comando);
+				while (!ValidadeInput(Comando))
+				{
+					std::cout << "\nINPUT INVALIDO!! Tente Novamente\n";
+
+					std::cout << "> ";
+					std::getline(std::cin, Comando);
+				}
+				ValidadeInput(Comando, Temp);
+				int Ano = Temp;
+
+				Reag.TrocarValidade(NomeAnt, Dia, Mes, Ano);
+			}
+			continue;
+		}
+
+		if (Comando == "Alterar Alerta" || Comando == "Alterar alerta" || Comando == "alterar alerta")
+		{
+			while (true)
+			{
+				std::cout << "\n\nDigite o nome do reagente e o novo alertas, caso queira sair digite \"Sair\":\n> ";
+				std::getline(std::cin, Comando);
+
+				if (Comando == "Sair" || Comando == "sair")
+					break;
+
+				std::string NomeAnt = Comando;
+
+				std::cout << "\n> ";
+				std::getline(std::cin, Comando);
+
+				float Temp;
+
+				while (true)
+				{
+					if (ValidadeInput(Comando))
+					{
+						ValidadeInput(Comando, Temp);
+
+						if (Temp >= 0 && Temp < NumeroAlertas)
+							break;
+						else
+							Comando = "a";
+					}
+
+					std::cout << "\n\nINPUT INVALIDO!! Tente Novamente\n";
+
+					std::cout << "\n> ";
+					std::getline(std::cin, Comando);
+
+				}
+
+				int NovoAlerta = Temp;
+
+				Reag.TrocarAlerta(NomeAnt, NovoAlerta);
+			}
+			continue;
+		}
+
+		if (Comando == "Ver Nomes" || Comando == "Ver nomes" || Comando == "ver nomes")
+		{
+			Reag.PrintNomes();
+
+			std::cout << "\n\nDigite qualquer coisa para sair:\n> ";
+			std::getline(std::cin, Comando);
+
+			continue;
+		}
+
+		if (Comando == "Ver Tudo" || Comando == "Ver tudo" || Comando == "ver tudo")
+		{
+			Reag.PrintInfos();
+
+			std::cout << "\n\nDigite qualquer coisa para sair:\n> ";
+			std::getline(std::cin, Comando);
+
+			continue;
+		}
+
+		if (Comando == "Pesquisar Especifico" || Comando == "Pesquisar especifico" || Comando == "pesquisar especifico")
+		{
+			while (true)
+			{
+				std::cout << "\n\nDeseja pesquisar pelo que? Nome, Peso, Validade. Caso queira sair digite \"Sair\":\n> ";
+				std::getline(std::cin, Comando);
+
+				if (Comando == "Sair" || Comando == "sair")
+					break;
+
+				if (Comando == "Nome" || Comando == "nome")
+				{
+					std::cout << "\nQual nome pesquisar?:\n> ";
+					std::getline(std::cin, Comando);
+
+					Reag.PrintEspecifico(Comando);
+
+					continue;
+				}
+
+				if (Comando == "Peso" || Comando == "peso")
+				{
+					std::cout << "\nDigite o peso total(reagente mais container) pelo qual procurar:\n> ";
+
+					std::getline(std::cin, Comando);
+
+					while (!ValidadeInput(Comando))
+					{
+						std::cout << "\nINPUT INVALIDO!! Tente Novamente\n";
+
+						std::cout << "> ";
+						std::getline(std::cin, Comando);
+					}
+
+					float Temp;
+
+					ValidadeInput(Comando, Temp);
+
+					Reag.PrintEspecifico(Temp);
+
+					continue;
+				}
+
+				if (Comando == "Validade" || Comando == "validade")
+				{
+					std::cout << "\nDigite a validade que deseja pesquisar(mes e ano, aperte enter entre eles)\n> ";
+					std::getline(std::cin, Comando);
+
+					float Temp;
+
+					while (true)
+					{
+						if (ValidadeInput(Comando))
+						{
+							ValidadeInput(Comando, Temp);
+
+							if (Temp > 0 && Temp < 13)
+								break;
+							else
+								Comando = "a";
+						}
+
+						std::cout << "\nINPUT INVALIDO!! Tente Novamente\n";
+
+						std::cout << "> ";
+						std::getline(std::cin, Comando);
+					}
+					int Mes = Temp;
+
+					std::cout << "> ";
+					std::getline(std::cin, Comando);
+
+					while (!ValidadeInput(Comando))
+					{
+						std::cout << "\nINPUT INVALIDO!! Tente Novamente\n";
+
+						std::cout << "> ";
+						std::getline(std::cin, Comando);
+					}
+					ValidadeInput(Comando, Temp);
+					int Ano = Temp;
+
+					Reag.PrintEspecifico(Mes, Ano);
+
+					continue;
+				}
+			}
+			continue;
+		}
+
+		if (Comando == "Verificar Validade" || Comando == "Verificar validade" || Comando == "verificar validade")
+		{
+			std::cout << "\n\nDigite o alerta minimo(0 para mostrar todos os reagentes vencido)\n> ";
+
+			std::getline(std::cin, Comando);
+
+			float Temp;
+
+			while (true)
+			{
+				if (ValidadeInput(Comando))
+				{
+					ValidadeInput(Comando, Temp);
+
+					if (Temp >= 0 && Temp < NumeroAlertas)
+						break;
+					else
+						Comando = "a";
+				}
+
+				std::cout << "\nINPUT INVALIDO!!\n";
+				std::cout << "> ";
+				std::getline(std::cin, Comando);
+			}
+			int Alerta = Temp;
+
+			Reag.ChecarValidade();
+			Reag.PrintValidade(Alerta);
+
+			std::cout << "\nDigite qualquer coisa para sair:\n> ";
+			std::getline(std::cin, Comando);
+
+			continue;
+		}
+
+		if (Comando == "Verificar Minimo" || Comando == "Verificar minimo" || Comando == "verificar minimo")
+		{
+			std::cout << "\n\nDigite o alerta minimo(0 para mostrar todos os reagentes vencido)\n> ";
+
+			std::getline(std::cin, Comando);
+
+			float Temp;
+
+			while (true)
+			{
+				if (ValidadeInput(Comando))
+				{
+					ValidadeInput(Comando, Temp);
+
+					if (Temp >= 0 && Temp < NumeroAlertas)
+						break;
+					else
+						Comando = "a";
+				}
+
+				std::cout << "\nINPUT INVALIDO!!\n";
+				std::cout << "> ";
+				std::getline(std::cin, Comando);
+			}
+			int Alerta = Temp;
+
+			Reag.PrintMin(Alerta);
+
+			continue;
+		}
+
+		if (Comando == "Ver Mudancas" || Comando == "Ver mudancas" || Comando == "ver mudancas")
+		{
+			Reag.SalvarAlteração();
+			Reag.PrintAlterados();
+
+			std::cout << "\n\nDigite qualquer coisa para sair:\n> ";
+			std::getline(std::cin, Comando);
+
+			continue;
+		}
+
+		if (Comando == "Ver Historico" || Comando == "Ver historico" || Comando == "ver historico")
+		{
+			Reag.PrintHistorico();
+
+			std::cout << "\n\nDigite qualquer coisa para sair:\n> ";
+			std::getline(std::cin, Comando);
+
+			continue;
+		}
+
+		if (Comando == "Confirmar Mudancas" || Comando == "Confirmar mudancas" || Comando == "confirmar mudancas")
+		{
+			std::cout << "\n\nTem certeza que deseja marcar como verificado? (Ainda sera possivel verificar as mudancas porem com menos detalhes e estarao todas juntas), (digite sim para confirmar)\n> ";
+			std::getline(std::cin, Comando);
+
+			if (Comando == "Sim" || Comando == "sim")
+				Reag.ConfirmarAlteração();
+
+			continue;
+		}
+
+		if (Comando == "Limpar Historico" || Comando == "Limpar historico" || Comando == "limpar historico")
+		{
+			Reag.LimparHistorico();
+
+			continue;
+		}
+
+		if (Comando == "Mudar A" || Comando == "Mudar a" || Comando == "mudar a")
+		{
+			std::cout << "\n\nPeso Atual\n> ";
+			std::getline(std::cin, Comando);
+
+			while (!ValidadeInput(Comando))
+			{
+				std::cout << "\nINPUT INVALIDO!! Tente Novamente\n";
+
+				std::cout << "> ";
+				std::getline(std::cin, Comando);
+			}
+
+			float NovoPeso;
+			ValidadeInput(Comando, NovoPeso);
+
+			Reag.PesoAtual = NovoPeso;
+
+			continue;
+		}
+
+		if (Comando == "Mudar S" || Comando == "Mudar s" || Comando == "mudar s")
+		{
+			std::cout << "\n\nPeso Salvo\n> ";
+			std::getline(std::cin, Comando);
+
+			while (!ValidadeInput(Comando))
+			{
+				std::cout << "\nINPUT INVALIDO!! Tente Novamente\n";
+
+				std::cout << "> ";
+				std::getline(std::cin, Comando);
+			}
+
+			float NovoPeso;
+			ValidadeInput(Comando, NovoPeso);
+
+			Reag.PesoSalvo = NovoPeso;
+
+			continue;
+		}
+
+		if (Comando == "Pesos" || Comando == "pesos")
+		{
+			std::cout << "\nSalvo: " << Reag.PesoSalvo << "\nPeso Medido(atual): " << Reag.PesoAtual << '\n';
+
+			std::cout << "\n\nDigite qualquer coisa para sair:\n> ";
+			std::getline(std::cin, Comando);
+
+			continue;
+		}
+
+		std::cout << "\nCOMANDO NAO EXISTE!!!\n";
+	}
 }
 
 int main()
 {
-    Loop();
+	Loop();
 }
 
