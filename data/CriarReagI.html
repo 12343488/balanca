@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Teste</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+  <h1>CRIAR REAGENTE</h1>
+  <form action="\CriarRP" method="get">
+    <p><input type="text" name="Nome" id="Nome" class="button">Nome</p>
+    <p><input type="number" step="0.000001" name="PesoT" id="PesoT" class="button">Peso total</p>
+    <p><input type="number" step="0.000001" name="PesoC" id="PesoC" class="button">Peso do container</p>
+    <p><input type="number" step="0.000001" name="PesoM" id="PesoM" class="button">Peso minimo(total - reagente)</p>
+    <p><input type="number" name="Dia" id="Dia" Min="1" Max="31" class="button">Dia de validade</p>
+    <p><input type="number" name="Mes" id="Mes" Min="1" Max="12" class="button">Mes</p>    
+    <p><input type="number" name="Ano" id="Ano" class="button">Ano</p>
+    <p><input type="number" name="Alerta" id="Alerta" class="button">Prioridade do alerta</p>
+    <p><button type="submit" class="button">CRIAR</button></p>
+  </form>
+  <p><a href="/"><button class="button">VOLTAR</button></a></p>
+</body>
+</html>
