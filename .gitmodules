@@ -1,0 +1,6 @@
+[submodule "HX711"]
+	path = HX711
+	url = https://github.com/bogde/HX711.git
+[submodule "lib/HX711"]
+	path = lib/HX711
+	url = https://github.com/bogde/HX711.git
