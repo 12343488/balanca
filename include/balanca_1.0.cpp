@@ -9,8 +9,11 @@
 #include <WiFiUdp.h>
 
 #include "NTPClient.h"
+#include "HX711.h"
 
-#define NumeroAlertas 2
+#define NumeroAlertas 	2
+#define OT 				33
+#define SCK 			32
 
 bool ValidadeInput(std::string input, float &result)
 {
@@ -142,9 +145,8 @@ bool ValidadeInput(std::string input)
 struct Reagentes
 {
 public:
-	const float DesvioAceitavel = 0; // para +/-
+	const float DesvioAceitavel = 2; // para +/-
 	std::string Nome;
-	float PesoSalvo, PesoAtual;
 
 	struct ReagLP // Lugar e peso de um reagente
 	{
@@ -157,10 +159,14 @@ public:
 	std::deque<unsigned int> PosiveisDistancias;	// salva depois das marcas
 	std::deque<ReagLP> Alterados;					// salva o index(depois da marca) e a Diferenca dos reagentes alterados enquanto o combo for true
 
-	Reagentes(std::string Nome) : Nome(Nome), PesoAtual(0), PesoSalvo(0)
+	Reagentes(std::string Nome) : Nome(Nome)
 	{
 		File Reag = SPIFFS.open(Arq.c_str(), FILE_READ);
 		File ReagH = SPIFFS.open(ArqH.c_str(), FILE_APPEND);
+
+		scale.begin(OT, SCK);
+		scale.set_scale(1452.1808);
+		scale.tare();
 
 		if (Reag)
 		{
@@ -189,29 +195,8 @@ public:
 
 						Reag.read((uint8_t *)&Peso, sizeof(float));
 
-						PesoSalvo += Peso;
-
 						Reag.seek((sizeof(float) * 2) + (sizeof(int) * 4), SeekCur);
 					}
-				}
-
-				Marca = 0xFF;
-				ReagH.write((uint8_t *)&Marca, sizeof(char));
-				// Peso atual vai ser o peso no sensor
-				PesoAtual = PesoSalvo;
-				ReagH.write((uint8_t *)&PesoAtual, sizeof(float));
-			}
-			else
-			{
-				ReagH.seek(fim - (sizeof(float) + sizeof(uint8_t)));
-
-				uint8_t marca;
-
-				ReagH.read(&marca, sizeof(uint8_t));
-
-				if (marca == 0xFF)
-				{
-					ReagH.read((uint8_t *)&PesoSalvo, sizeof(float));
 				}
 			}
 		}
@@ -222,8 +207,12 @@ public:
 		}
 	}
 
-	Reagentes() : Nome(""), PesoAtual(0), PesoSalvo(0)
-	{			};
+	Reagentes() : Nome("")
+	{
+		scale.begin(OT, SCK);
+		scale.set_scale(-2103.5);
+		scale.tare();
+	};
 
 	void CriarReagente(std::string Nome, float Peso, float PesoCont, float PesoMin, int dia, int mes, int ano, int Alerta)
 	{
@@ -248,8 +237,7 @@ public:
 		Reag.write((uint8_t *)&Alerta, sizeof(int));
 
 		// temporario
-		PesoSalvo += Peso;
-
+	
 		Reag.close();
 	}
 
@@ -344,9 +332,6 @@ public:
 				Reag.write(NomeR, NomeSize);
 				Reag.write((uint8_t *)&NovoPeso, sizeof(float));
 				Reag.write(Outros, sizeof(int) * 4 + (sizeof(float) * 2));
-
-				PesoSalvo += NovoPeso - PesoAntigo;
-
 				Reag.close();
 
 				WriteDepois(Arq);
@@ -519,17 +504,40 @@ public:
 
 	void VerificarPeso()
 	{
-		if (PesoSalvo != PesoAtual)
+		scale.power_up();
+		float Peso = scale.get_units(1);
+		Serial.print("average:\t");
+		Serial.println(Peso);
+
+		Serial.print("Cond: ");
+		Serial.print((Peso >= 0.3));
+		Serial.print('\t');
+		Serial.println((Peso <= -0.3));
+
+		if ((Peso >= 1) || (Peso <= -1))
 		{
-			File ReagH = SPIFFS.open(ArqH.c_str(), FILE_APPEND);
-			uint8_t Marca = 0xFF;
-			ReagH.write(&Marca, sizeof(char));
-			ReagH.write((uint8_t *)&PesoAtual, sizeof(float));
-
-			PesoSalvo = PesoAtual;
-
-			ReagH.close();
+			if(MudouP)
+			{
+				Serial.println("salvou");
+				File ReagH = SPIFFS.open(ArqH.c_str(), FILE_APPEND);
+				uint8_t Marca = 0xFF;
+				ReagH.write(&Marca, sizeof(char));
+				ReagH.write((uint8_t *)&Peso, sizeof(float));
+				ReagH.close();
+				MudouP = false;
+			}
+			else
+			{
+				MudouP = true;
+			}
 		}
+
+		if(!MudouP)
+			scale.tare(1);
+
+		Serial.println("\n------------\n");
+
+		scale.power_down();
 	}
 
 	void SalvarAlteracao()
@@ -550,10 +558,16 @@ public:
 
 		unsigned int ReagHEnd = ReagH.size();
 
-		float PesoAnt = -1;
+		Serial.print("Tamanho do historico: ");
+		Serial.println(ReagH.size());
+
+		unsigned int ReagFim = Reag.size();
 
 		while (ReagH.position() < ReagHEnd)
 		{
+			std::deque<int> Compativeis;
+			ReagA = SPIFFS.open(ArqM.c_str(), FILE_APPEND);
+
 			uint8_t Marca;
 			ReagH.read(&Marca, sizeof(char));
 
@@ -562,68 +576,78 @@ public:
 			if (Marca != 0xFF)
 				std::cout << "Problemas ao ler o arquivo!!\tLinha: 988\n";
 
-			if (PesoAnt > -1)
+			float Diferenca;
+
+			ReagH.read((uint8_t *)&Diferenca, sizeof(float));
+
+			if (Diferenca != 0)
 			{
-				float Diferenca, PesoVer;
 
-				ReagH.read((uint8_t *)&PesoVer, sizeof(float));
+				unsigned int ReagAFim = ReagA.size();
 
-				Diferenca = PesoVer - PesoAnt;
+				bool VariosCompativeis = false;
+				bool Compativel = false;
 
-				if (Diferenca != 0)
+				Marca = 0xFF;
+				ReagA.write(&Marca, sizeof(char));
+
+				ReagA.write((uint8_t *)&Diferenca, sizeof(float));
+
+				int AlertaM = 0;
+
+				// tudo s� vai escrever se a Diferenca for negativa pois apnas escreve informa�oes relevantes para retiradas.
 				{
-					unsigned int ReagFim = Reag.size();
+					// Lista Reag
+					Reag.seek(0, SeekSet);
 
-					unsigned int ReagAFim = ReagA.size();
-
-					bool VariosCompativeis = false;
-					bool Compativel = false;
-
-					Marca = 0xFF;
-					ReagA.write(&Marca, sizeof(char));
-
-					ReagA.write((uint8_t *)&Diferenca, sizeof(float));
-
-					int AlertaM = 0;
-
-					// tudo s� vai escrever se a Diferenca for negativa pois apnas escreve informa�oes relevantes para retiradas.
+					while (Reag.position() < ReagFim && Diferenca < 0)
 					{
-						//Lista Reag
-						Reag.seek(0, SeekSet);
+						unsigned int InicioReag, NomeSize;
+						int Alerta;
+						float PesoReag;
 
-						while (Reag.position() < ReagFim && Diferenca < 0)
+						Reag.read(&Marca, sizeof(char));
+
+						if (Marca != 0xFF)
 						{
-							unsigned int InicioReag, NomeSize;
-							int Alerta;
-							float PesoReag;
+							std::cout << "Problemas ao ler o arquivo!!\tLinha: 685\n";
+							delay(1000);
+						}
 
-							Reag.read(&Marca, sizeof(char));
+						InicioReag = Reag.position();
 
-							if (Marca != 0xFF)
+						Reag.read((uint8_t *)&NomeSize, sizeof(unsigned int));
+
+						Reag.seek(NomeSize, SeekCur);
+
+						Reag.read((uint8_t *)&PesoReag, sizeof(float));
+
+						Reag.seek((sizeof(float) * 2) + (sizeof(int) * 3), SeekCur);
+
+						Reag.read((uint8_t *)&Alerta, sizeof(int));
+
+						if ((-Diferenca >= PesoReag - DesvioAceitavel) && (-Diferenca <= PesoReag + DesvioAceitavel))
+						{
+							bool JaFoi = false;
+
+							for(int i = 0; i < Compativeis.size(); i++)
 							{
-								std::cout << "Problemas ao ler o arquivo!!\tLinha: 685\n";
-								delay(1000);
+								if(InicioReag == Compativeis[i])
+								{
+									JaFoi = true;
+									break;
+								}
 							}
 
-							InicioReag = Reag.position();
-
-							Reag.read((uint8_t *)&NomeSize, sizeof(unsigned int));
-
-							Reag.seek(NomeSize, SeekCur);
-
-							Reag.read((uint8_t *)&PesoReag, sizeof(float));
-
-							Reag.seek((sizeof(float) * 2) + (sizeof(int) * 3), SeekCur);
-
-							Reag.read((uint8_t *)&Alerta, sizeof(int));
-
-							if ((-Diferenca >= PesoReag - DesvioAceitavel) && (-Diferenca <= PesoReag + DesvioAceitavel))
+							if(!JaFoi)
 							{
 								if (VariosCompativeis)
 								{
-									Marca = -2;
+									Marca = 0xFE;
 
 									ReagA.write(&Marca, sizeof(char));
+
+									Serial.println(ReagA.size());
 								}
 
 								ReagA.write((uint8_t *)&InicioReag, sizeof(unsigned int));
@@ -631,58 +655,94 @@ public:
 								VariosCompativeis = true;
 								Compativel = true;
 
+								Compativeis.push_back(InicioReag);
+
 								if (Alerta > AlertaM)
 									AlertaM = Alerta;
 							}
+							else
+								continue;
 						}
+					}
 
-						bool sinal = -1; //-1 inicializa, true - positivo, false = negativo
-						bool AchouA = false;
-						unsigned int InicioReag;
-						unsigned int ReagAParado;
-						ReagAParado = 0;
+					bool sinal = -1; //-1 inicializa, true - positivo, false = negativo
+					bool AchouA = false;
+					bool JaVoltou = false;
+					unsigned int InicioReag;
+					unsigned int InicioReagNegL = -1;
+					unsigned int ReagAParado;
+					ReagAParado = 0;
 
-						ReagA.seek(0, SeekSet);
+					ReagA.seek(0, SeekSet);
 
-						//Lista Reags Mudados
-						while ((ReagA.position() < ReagAFim) && (Diferenca < 0))
+					/*
+					Vai ver no historico de alterads se:
+
+					uma das devolvidas teve o mesmo peso
+					
+					vai olhas a retirada anterior
+
+					vai salvar o valor do reagente retirado anteriormente
+					*/
+
+					// Lista Reags Mudados
+					while ((ReagA.position() < ReagAFim) && (Diferenca < 0))
+					{
+						ReagA.close();
+						ReagA = SPIFFS.open(ArqM.c_str(), FILE_READ);
+
+						if (ReagA)
 						{
-							ReagA.close();
-							ReagA = SPIFFS.open(ArqM.c_str(), FILE_READ);
 							ReagA.seek(ReagAParado);
+
+							//Foi para a utima coisa verificada
 
 							int Alerta;
 							float PesoReag;
 
 							ReagA.read(&Marca, sizeof(char));
 
-							if (Marca != 0xFF)
+							if (Marca != 0xFF && Marca != 0xFE)
 							{
-								Serial.println("Problemas ao ler o arquivo!!\tLinha: 675\n");
+								Serial.println("Problemas ao ler o arquivo!!\tLinha: 675");
+								Serial.print("Tentano ler em: ");
+								Serial.println(ReagA.position() - 1);
 								delay(1000);
 							}
 
 							if (Marca == 0xFF)
 							{
-							
-								ReagA.read((uint8_t*)&PesoReag, sizeof(float));
-
-								AchouA = false;
+								// Le o peso da alteracao
+								if (!ReagA.read((uint8_t *)&PesoReag, sizeof(float)))
+								{
+									Serial.println("nao leu");
+									break;
+								}
 
 								if (PesoReag < 0)
 								{
+									InicioReagNegL = ReagAParado;
 									ReagA.read((uint8_t *)&InicioReag, sizeof(int));
 
 									sinal = false;
+
+									// se for negativo fala que é negativo e salvao inicio do reagente
 								}
 
 								if (PesoReag > 0)
+								{
 									sinal = true;
+									if (AchouA)
+										AchouA = false;
+								}
+
+								// ve se o sinal é positivo e salva
 
 								ReagA.read(&Marca, sizeof(char));
 
 								ReagA.seek(-(long long)sizeof(char), SeekCur);
 
+								// procura para ver se tem um alerta
 								if (Marca != 0xFF && Marca != 0xFE && sinal == false)
 								{
 									ReagA.read((uint8_t *)&Alerta, sizeof(int));
@@ -693,87 +753,126 @@ public:
 
 								ReagAParado = ReagA.position();
 
+								if (AchouA && !sinal)
+								{
+									bool JaFoi = false;
+
+									for (int i = 0; i < Compativeis.size(); i++)
+									{
+										if (InicioReag == Compativeis[i])
+										{
+											JaFoi = true;
+											break;
+										}
+									}
+
+									if (!JaFoi)
+									{
+										Marca = 0;
+										bool EntrouComp = false;
+										ReagA.close();
+										ReagA = SPIFFS.open(ArqM.c_str(), FILE_APPEND);
+
+										if (VariosCompativeis)
+										{
+											Marca = 0xFE;
+
+											ReagA.write(&Marca, sizeof(char));
+										}
+
+										// salva o reagente?
+										ReagA.write((uint8_t *)&InicioReag, sizeof(unsigned int));
+
+										ReagA.close();
+
+										VariosCompativeis = true;
+										Compativel = true;
+
+										Compativeis.push_back(InicioReag);
+									}
+									else
+										continue;
+								}
+
+								// so entra se for positivo
 								if (((-Diferenca >= PesoReag - DesvioAceitavel) && (-Diferenca <= PesoReag + DesvioAceitavel)) && sinal == true)
+								{
+									AchouA = true;
+									Marca = 0;
+
+									if(!JaVoltou)
+									{
+										ReagA.seek(InicioReagNegL);
+										ReagAParado = InicioReagNegL;
+										JaVoltou = true;
+										continue;
+									}
+									else
+										JaVoltou = false;
+								}
+							}
+							else if (Marca == 0xFE)
+							{
+								ReagA.read((uint8_t *)&InicioReag, sizeof(int));
+								ReagA.read(&Marca, sizeof(char));
+								ReagA.seek(-(long long)sizeof(char), SeekCur);
+
+								// procura para ver se tem um alerta
+								if (Marca != 0xFF && Marca != 0xFE && sinal == false)
+								{
+									ReagA.read((uint8_t *)&Alerta, sizeof(int));
+
+									if (AlertaM < Alerta)
+										AlertaM = Alerta;
+								}
+
+								ReagAParado = ReagA.position();
+								if (AchouA)
 								{
 									ReagA.close();
 									ReagA = SPIFFS.open(ArqM.c_str(), FILE_APPEND);
 
-									if (VariosCompativeis)
-									{
-										Marca = 0xFE;
-
-										ReagA.write(&Marca, sizeof(char));
-									}
+									Marca = 0xFE;
+									ReagA.write(&Marca, sizeof(char));
 
 									ReagA.write((uint8_t *)&InicioReag, sizeof(unsigned int));
+									VariosCompativeis = true;
+									Compativel = true;
 
 									ReagA.close();
+									ReagA = SPIFFS.open(ArqM.c_str(), FILE_READ);
 
-									VariosCompativeis = true;
-									AchouA = true;
-									Compativel = true;
+									ReagA.seek(ReagAParado);
 								}
 							}
-							else if (Marca == 0xFE && AchouA)
-							{
-								ReagA.read((uint8_t *)&InicioReag, sizeof(int));
-
-								ReagA.read(&Marca, sizeof(char));
-								if (Marca == 0xFF || Marca == 0xFE)
-									ReagA.seek(-(long long)sizeof(char), SeekCur);
-								else if (AlertaM < Marca)
-									AlertaM = Marca;
-
-								ReagAParado = ReagA.position();
-
-								ReagA.close();
-								ReagA = SPIFFS.open(ArqM.c_str(), FILE_APPEND);
-
-								Marca = 0xFE;
-								ReagA.write(&Marca, sizeof(char));
-
-								ReagA.write((uint8_t *)&InicioReag, sizeof(unsigned int));
-								VariosCompativeis = true;
-								Compativel = true;
-
-								ReagA.close();
-								ReagA = SPIFFS.open(ArqM.c_str(), FILE_READ);
-
-								ReagA.seek(ReagAParado);
-							}
 						}
+						else
+							Serial.println("Não abriu");
+					}
+					if (Compativel)
+					{
+						ReagA.close();
+						ReagA = SPIFFS.open(ArqM.c_str(), FILE_APPEND);
+						ReagA.write((uint8_t *)&AlertaM, sizeof(int));
 
-						if (Compativel)
-						{
-							ReagA.close();
-							ReagA = SPIFFS.open(ArqM.c_str(), FILE_APPEND);
-							ReagA.write((uint8_t *)&AlertaM, sizeof(int));
-						}
-
-						if (!Compativel && Diferenca < 0)
-						{
-							ReagA.close();
-							ReagA = SPIFFS.open(ArqM.c_str(), FILE_APPEND);
-
-							int Temp = -1;
-							ReagA.write((uint8_t *)&Temp, sizeof(int));
-
-							ReagA.close();
-							ReagA = SPIFFS.open(ArqM.c_str(), FILE_READ);
-						}
+						Serial.print("Aumentou o tamanho em 4 l-10 - Alerta\t");
+						Serial.println(ReagA.size());
 					}
 
-					PesoAnt = PesoVer;
+					if (!Compativel && Diferenca < 0)
+					{
+						ReagA.close();
+						ReagA = SPIFFS.open(ArqM.c_str(), FILE_APPEND);
+
+						int Temp = -1;
+						ReagA.write((uint8_t *)&Temp, sizeof(int));
+						ReagA.close();
+						ReagA = SPIFFS.open(ArqM.c_str(), FILE_READ);
+					}
 				}
 			}
-			else
-			{
-				float PesoVer = 0;
-
-				ReagH.read((uint8_t *)&PesoVer, sizeof(float));
-				
-				PesoAnt = PesoVer;
-			}
+			
+			ReagA.close();
 		}
 
 		Reag.close();
@@ -835,14 +934,7 @@ public:
 			ReagH.close();
 			ReagHA.close();
 
-			ReagH = SPIFFS.open(ArqH.c_str(), FILE_WRITE);
-
-			a = 0xFF;
-
-			ReagH.write(&a, sizeof(char));
-			ReagH.write((uint8_t *)&PesoAtual, sizeof(float));
-
-			ReagH.close();
+			LimparHistorico();
 		}
 	}
 
@@ -858,8 +950,6 @@ public:
 		Serial.println(Alterados.size());
 
 		File Reag = SPIFFS.open(Arq.c_str(), FILE_READ);
-
-		delay(2000);
 
 		if (!Alterados.empty())
 		{
@@ -883,8 +973,6 @@ public:
 				float PesoA;
 
 				Reag.read((uint8_t *)&PesoA, sizeof(float));
-
-				PesoSalvo -= PesoA - i->Peso;
 
 				Serial.print("Peso anterior: ");
 				Serial.println(PesoA);
@@ -1358,7 +1446,7 @@ public:
 		File Reag = SPIFFS.open(Arq.c_str());
 		File ReagA = SPIFFS.open(ArqM.c_str(), FILE_READ);
 
-		Serial.println("Entrou em leitura de alterados");
+		Serial.println("\n\nEntrou em leitura de alterados");
 	
 		if (!Reag)
 			Serial.println("Problemas ao ler o arquivo!!!\tLinha 1185");
@@ -1382,6 +1470,7 @@ public:
 
 		while (ReagA.position() < ReagAFim)
 		{
+			Serial.println("Comeco Loop");
 			unsigned int LugarReagA = ReagA.position();
 
 			uint8_t Marca = 0;
@@ -1417,6 +1506,9 @@ public:
 
 				if (Lugar > -1)
 				{
+					Serial.print("Vendo o Lugar: ");
+					Serial.println(Lugar - 1);
+
 					Reag.seek(Lugar - 1);
 					Reag.read(&Marca, sizeof(char));
 
@@ -1427,13 +1519,17 @@ public:
 
 					if (!EstadoA && EstadoA != -1)
 					{
+						Serial.println("Limpa por ser negativo e o anterior tbm negativo");
 						Combo = false;
 						Alterados.clear();
 					}
+
 					EstadoA = false;
 
 					if (Combo)
 					{
+						Serial.print("Salvou o lugar");
+						Serial.println(Lugar);
 						Alterados.push_back(ReagLP(Lugar, -1));
 					}
 
@@ -1480,6 +1576,7 @@ public:
 						}
 
 						Combo = false;
+						Serial.println("Limpa por ter mais de um compativel");
 						Alterados.clear();
 					}
 				}
@@ -1502,11 +1599,14 @@ public:
 					}
 
 					Combo = false;
+					Serial.println("Limpa por não ter um compativel");
 					Alterados.clear();
 				}
 			}
 			else
 			{
+				Serial.println("Positivo");
+
 				if(PrintT == 0)
 					std::cout << "\n\n-------------------------\nPESO AUMENTOU EM: " << Diferenca << " g\nVerifique os Reagentes possivelmente alterados!!";
 
@@ -1525,9 +1625,11 @@ public:
 
 				if (EstadoA)
 				{
+					Serial.println("Limpa pelo anterior ser positivo tbm");
 					Combo = false;
 					Alterados.clear();
 				}
+
 				EstadoA = true;
 
 				if (Combo && !Alterados.empty())
@@ -1551,13 +1653,20 @@ public:
 						Reag.read((uint8_t *)&PesoC, sizeof(float));
 
 						if (Diferenca >= PesoC)
+						{
+							Serial.print("Salvou o peso: ");
+							Serial.println(Diferenca);
 							Alterados.back().Peso = Diferenca;
+						}
 						else
 						{
+							Serial.println("Novo peso e  maior que o peso antigo");
 							Combo = false;
+							Alterados.clear();
 						}
 					}
 				}
+				Serial.println("Fim do loop\n");
 			}
 		}
 		std::cout << '\n';
@@ -1998,6 +2107,9 @@ private:
 	std::string ArqH = "/" + Nome + "_Historico.dat";
 	std::string ArqM = "/" + Nome + "_Alterados.dat"; // contem os possiveis reagentes que foram alterados quando o peso muda
 	std::string ArqHA = "/" + Nome + "_HistoricoAntigo.dat";
+
+	HX711 scale;
+	bool MudouP = false;
 
 	void GetAntes(std::string ArqS, int LocalReag) // Salva as informa��es Antes do reagente seleconado no Arquivo *NOME*_Antes.dat
 	{

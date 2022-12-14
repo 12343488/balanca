@@ -10,31 +10,32 @@
 #include "LiquidCrystal_I2C.h"
 #include "balanca_1.0.cpp"
 #include "esp_wpa2.h"
+#include "HX711.h"
 
 #define FORMAT_SPIFFS_IF_FAILED true
 
-#define LED_EMB 2
-
-#define CIMA 13
-#define DIREITA 12
-#define BAIXO 14
-#define ESQUERDA 27
-#define ENTRAR 26
-#define SAIR 25
+#define CIMA 		13
+#define DIREITA 	12
+#define BAIXO 		14
+#define ESQUERDA 	27
+#define ENTRAR 		26
+#define SAIR 		25
+/*------HX 711------*/
+#define OT 			33
+#define SCK 		32
+/*----ALEATORIOS----*/
+#define LERB		35
 
 const char ssid[] = "vena";
 const char password[] = "veninhas";
-// const char ssid[] = "NetVirtua92_2G";
-// const char password[] = "14124804";
+//const char ssid[] = "NetVirtua92_2G";
+//const char password[] = "14124804";
 // const char ssid[] = "Acad-Test";
 
-String ledState;
-
 Reagentes *Lista;
-
 AsyncWebServer server(80);
-
-LiquidCrystal_I2C lcd(0x27,16,2);
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+HX711 scale;
 
 void listDir(const char *dirname, uint8_t levels)
 {
@@ -614,14 +615,14 @@ void setup()
 {
 	// Serial port for debugging purposes
 	Serial.begin(115200);
-	pinMode(LED_EMB, OUTPUT);
-
+	
 	pinMode(CIMA, INPUT_PULLDOWN);
 	pinMode(DIREITA, INPUT_PULLDOWN);
 	pinMode(BAIXO, INPUT_PULLDOWN);
 	pinMode(ESQUERDA, INPUT_PULLDOWN);
 	pinMode(ENTRAR, INPUT_PULLDOWN);
 	pinMode(SAIR, INPUT_PULLDOWN);
+	pinMode(LERB, INPUT);
 
 	// Initialize SPIFFS
 	if (!SPIFFS.begin(true))
@@ -632,11 +633,6 @@ void setup()
 
 	Lista = new Reagentes("a");
 
-	Serial.println("Pesos: ");
-	Serial.print("Salvo: ");
-	Serial.println(Lista->PesoSalvo);
-	Serial.print("Atual: ");
-	Serial.println(Lista->PesoAtual);
 	// Connect to Wi-Fi
 	WiFi.begin(ssid, password);
 
@@ -650,6 +646,10 @@ void setup()
 
 	// Print ESP32 Local IP Address
 	Serial.println(WiFi.localIP());
+
+	scale.begin(OT, SCK);
+	scale.set_scale(1452.1808);
+	scale.tare();
 
 	// cria as paginas do site
 	{
@@ -949,6 +949,7 @@ void setup()
 		}
 	});
 
+/*
 	server.on("/MudarP", HTTP_GET, [](AsyncWebServerRequest *request) 
 	{
 		if(request->hasParam("peso"))
@@ -964,6 +965,7 @@ void setup()
 			request->send(SPIFFS, "/MudarPeso.html");
 		}
 	});
+*/
 
 	server.on("/MudarPR", HTTP_GET, [](AsyncWebServerRequest *request)
 	{ 
@@ -1030,6 +1032,7 @@ void setup()
 		}
 
 		request->send(SPIFFS, "/MudarPesoReag.html");
+		
 	});
 
 	server.on("/LimpH", HTTP_GET, [](AsyncWebServerRequest *request)
@@ -1053,9 +1056,18 @@ void setup()
 int LugarMain = 0;
 bool MainM = true;
 int voltasMain = 0;
+int Loops = 0;
 
 void loop()
 {
+	if(Loops == 0 && digitalRead(LERB))
+		Lista->VerificarPeso();
+
+	if(Loops >= 10)
+		Loops = 0;
+	else
+		Loops++;
+
 	if (MainM)
 	{
 		lcd.clear();
