@@ -383,7 +383,7 @@ void PrintAlteradosDislpay(unsigned int Alerta)
 {
 	Lista->SalvarAlteracao();
 	Serial.println("Salvou");
-	Lista->PrintAlterados(2);
+	Lista->PrintAlterados(Alerta, 2);
 	Serial.println("Saiu da primeira leitura");
 
 	unsigned int Mostrar = 0;
@@ -611,6 +611,106 @@ int DisplaySelectA()
 	}
 }
 
+void LEDs(int Num)
+{
+	Serial.println("LEDs");
+	Serial.println(Num);
+	Serial.println("\n");
+
+	switch(Num)
+	{
+		case 0:
+			digitalWrite(15, LOW);
+			digitalWrite( 2, LOW);
+			digitalWrite( 4, LOW);
+			digitalWrite(16, LOW);
+			digitalWrite(17, LOW);
+			digitalWrite(5, LOW);
+			break;
+
+		case 1:
+			digitalWrite(15, HIGH);
+			digitalWrite( 2, LOW );
+			digitalWrite( 4, LOW );
+			digitalWrite(16, LOW );
+			digitalWrite(17, LOW );
+			digitalWrite( 5, LOW );
+			break;
+
+		case 2:
+			digitalWrite(15, LOW );
+			digitalWrite( 2, HIGH);
+			digitalWrite( 4, HIGH);
+			digitalWrite(16, HIGH);
+			digitalWrite(17, HIGH);
+			digitalWrite( 5, HIGH);
+			break;
+
+		case 3:
+			digitalWrite(15, HIGH);
+			digitalWrite( 2, HIGH);
+			digitalWrite( 4, LOW );
+			digitalWrite(16, LOW );
+			digitalWrite(17, LOW );
+			digitalWrite( 5, LOW );
+			break;
+
+		case 4:
+			digitalWrite(15, LOW );
+			digitalWrite( 2, LOW );
+			digitalWrite( 4, HIGH);
+			digitalWrite(16, HIGH);
+			digitalWrite(17, HIGH);
+			digitalWrite( 5, HIGH);
+			break;
+
+		case 5:
+			digitalWrite(15, HIGH);
+			digitalWrite( 2, HIGH);
+			digitalWrite( 4, HIGH);
+			digitalWrite(16, LOW );
+			digitalWrite(17, LOW );
+			digitalWrite( 5, LOW );
+			break;
+
+		case 6:
+			digitalWrite(15, LOW );
+			digitalWrite( 2, LOW );
+			digitalWrite( 4, LOW );
+			digitalWrite(16, HIGH);
+			digitalWrite(17, HIGH);
+			digitalWrite( 5, HIGH);
+			break;
+
+		case 7:
+			digitalWrite(15, HIGH);
+			digitalWrite( 2, HIGH);
+			digitalWrite( 4, HIGH);
+			digitalWrite(16, HIGH);
+			digitalWrite(17, LOW );
+			digitalWrite( 5, LOW );
+			break;
+
+		case 8:
+			digitalWrite(15, LOW);
+			digitalWrite( 2, LOW );
+			digitalWrite( 4, LOW );
+			digitalWrite(16, LOW );
+			digitalWrite(17, HIGH);
+			digitalWrite( 5, HIGH);
+			break;
+
+		case 9:
+			digitalWrite(15, LOW );
+			digitalWrite( 2, LOW );
+			digitalWrite( 4, LOW );
+			digitalWrite(16, LOW );
+			digitalWrite(17, LOW );
+			digitalWrite( 5, HIGH);
+			break;
+	}
+}
+
 void setup()
 {
 	// Serial port for debugging purposes
@@ -620,9 +720,17 @@ void setup()
 	pinMode(DIREITA, INPUT_PULLDOWN);
 	pinMode(BAIXO, INPUT_PULLDOWN);
 	pinMode(ESQUERDA, INPUT_PULLDOWN);
-	pinMode(ENTRAR, INPUT_PULLDOWN);
-	pinMode(SAIR, INPUT_PULLDOWN);
+	pinMode(ENTRAR, INPUT);
+	pinMode(SAIR, INPUT);
+
 	pinMode(LERB, INPUT);
+
+	pinMode(15, OUTPUT);
+	pinMode(2 , OUTPUT);
+	pinMode(4 , OUTPUT);
+	pinMode(16, OUTPUT);
+	pinMode(17, OUTPUT);
+	pinMode(5 , OUTPUT);
 
 	// Initialize SPIFFS
 	if (!SPIFFS.begin(true))
@@ -653,397 +761,399 @@ void setup()
 
 	// cria as paginas do site
 	{
-	server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
-	{ 
-		request->send(SPIFFS, "/inicio.html"); 
-	});
+		server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
+		{ 
+			request->send(SPIFFS, "/inicio.html"); 
+		});
 
-	server.on("/NomeEspI", HTTP_GET, [](AsyncWebServerRequest *request)
-	{ 
-		request->send(SPIFFS, "/PesquisarNomeI.html"); 
-	});
+		server.on("/NomeEspI", HTTP_GET, [](AsyncWebServerRequest *request)
+		{ 
+			request->send(SPIFFS, "/PesquisarNomeI.html"); 
+		});
 
-	server.on("/NomeEspP", HTTP_GET, [](AsyncWebServerRequest *request)
-	{ 
-		Serial.println("redirecionou");
-		AsyncWebParameter* p = request->getParam("nome");
+		server.on("/NomeEspP", HTTP_GET, [](AsyncWebServerRequest *request)
+		{ 
+			Serial.println("redirecionou");
+			AsyncWebParameter* p = request->getParam("nome");
 
-		Serial.println(p->value().c_str());
-		
-		PrintWebA();
-		Lista->PrintEspecifico(std::string(p->value().c_str()), 1);
-		Serial.println("opa");
-		PrintWebD();
-		Serial.println("opa");
-		request->send(SPIFFS, "/Print.html"); 
-	});
+			Serial.println(p->value().c_str());
+			
+			PrintWebA();
+			Lista->PrintEspecifico(std::string(p->value().c_str()), 1);
+			Serial.println("opa");
+			PrintWebD();
+			Serial.println("opa");
+			request->send(SPIFFS, "/Print.html"); 
+		});
 
-	server.on("/PesoEspI", HTTP_GET, [](AsyncWebServerRequest *request)
-	{ 
-		request->send(SPIFFS, "/PesquisarPesoI.html"); 
-	});
+		server.on("/PesoEspI", HTTP_GET, [](AsyncWebServerRequest *request)
+		{ 
+			request->send(SPIFFS, "/PesquisarPesoI.html"); 
+		});
 
-	server.on("/PesoEspP", HTTP_GET, [](AsyncWebServerRequest *request)
-	{ 
-		Serial.println("redirecionou");
-		AsyncWebParameter* p = request->getParam("peso");
+		server.on("/PesoEspP", HTTP_GET, [](AsyncWebServerRequest *request)
+		{ 
+			Serial.println("redirecionou");
+			AsyncWebParameter* p = request->getParam("peso");
 
-		Serial.println(p->value().c_str());
-		
-		PrintWebA();
-		Lista->PrintEspecifico(p->value().toFloat(), 1);
-		Serial.println("opa");
-		PrintWebD();
-		Serial.println("opa");
-		request->send(SPIFFS, "/Print.html"); 
-	});
+			Serial.println(p->value().c_str());
+			
+			PrintWebA();
+			Lista->PrintEspecifico(p->value().toFloat(), 1);
+			Serial.println("opa");
+			PrintWebD();
+			Serial.println("opa");
+			request->send(SPIFFS, "/Print.html"); 
+		});
 
-	server.on("/ValidadeEspI", HTTP_GET, [](AsyncWebServerRequest *request)
-	{ 
-		request->send(SPIFFS, "/PesquisarValidadeI.html"); 
-	});
+		server.on("/ValidadeEspI", HTTP_GET, [](AsyncWebServerRequest *request)
+		{ 
+			request->send(SPIFFS, "/PesquisarValidadeI.html"); 
+		});
 
-	server.on("/ValidadeEspI", HTTP_GET, [](AsyncWebServerRequest *request)
-	{ 
-		request->send(SPIFFS, "/PesquisarValidadeI.html"); 
-	});
+		server.on("/ValidadeEspI", HTTP_GET, [](AsyncWebServerRequest *request)
+		{ 
+			request->send(SPIFFS, "/PesquisarValidadeI.html"); 
+		});
 
-	server.on("/ValidadeEspP", HTTP_GET, [](AsyncWebServerRequest *request)
-			  { 
-		Serial.println("redirecionou");
-		AsyncWebParameter* p = request->getParam("mes");
-		int mes = p->value().toInt();
-		Serial.println(p->value().c_str());
+		server.on("/ValidadeEspP", HTTP_GET, [](AsyncWebServerRequest *request)
+		{ 
+			Serial.println("redirecionou");
+			AsyncWebParameter* p = request->getParam("mes");
+			int mes = p->value().toInt();
+			Serial.println(p->value().c_str());
 
-		p = request->getParam("ano");
-		int ano = p->value().toInt();
+			p = request->getParam("ano");
+			int ano = p->value().toInt();
 
-		Serial.println(p->value().c_str());
-		
-		PrintWebA();
-		Lista->PrintEspecifico(mes, ano, 1);
-		Serial.println("opa");
-		PrintWebD();
-		Serial.println("opa");
-		request->send(SPIFFS, "/Print.html"); });
+			Serial.println(p->value().c_str());
+			
+			PrintWebA();
+			Lista->PrintEspecifico(mes, ano, 1);
+			Serial.println("opa");
+			PrintWebD();
+			Serial.println("opa");
+			request->send(SPIFFS, "/Print.html"); 
+		});
 
-	server.on("/VencidosI", HTTP_GET, [](AsyncWebServerRequest *request)
-	{ 
-		request->send(SPIFFS, "/VencidosI.html"); 
-	});
+		server.on("/VencidosI", HTTP_GET, [](AsyncWebServerRequest *request)
+		{ 
+			request->send(SPIFFS, "/VencidosI.html"); 
+		});
 
-	server.on("/VencidosP", HTTP_GET, [](AsyncWebServerRequest *request)
-	{ 
-		Serial.println("redirecionou");
+		server.on("/VencidosP", HTTP_GET, [](AsyncWebServerRequest *request)
+		{ 
+			Serial.println("redirecionou");
 
-		AsyncWebParameter *p = request->getParam("alerta");
-		Serial.println(p->value().c_str());
+			AsyncWebParameter *p = request->getParam("alerta");
+			Serial.println(p->value().c_str());
 
-		PrintWebA();
-		Lista->ChecarValidade();
-		Lista->PrintValidade(p->value().toInt(), 1);
-		Serial.println("opa");
-		PrintWebD();
-		Serial.println("opa");
-		request->send(SPIFFS, "/Print.html"); 
-	});
+			PrintWebA();
+			Lista->ChecarValidade();
+			Lista->PrintValidade(p->value().toInt(), 1);
+			Serial.println("opa");
+			PrintWebD();
+			Serial.println("opa");
+			request->send(SPIFFS, "/Print.html"); 
+		});
 
-	server.on("/Infos", HTTP_GET, [](AsyncWebServerRequest *request)
-	{ 
-		Serial.println("redirecionou");
+		server.on("/Infos", HTTP_GET, [](AsyncWebServerRequest *request)
+		{ 
+			Serial.println("redirecionou");
 
-		PrintWebA();
-		Lista->PrintInfos(1);
-		Serial.println("opa");
-		PrintWebD();
-		Serial.println("opa");
-		request->send(SPIFFS, "/Print.html"); 
-	});
+			PrintWebA();
+			Lista->PrintInfos(1);
+			Serial.println("opa");
+			PrintWebD();
+			Serial.println("opa");
+			request->send(SPIFFS, "/Print.html"); 
+		});
 
-	server.on("/PesoMinI", HTTP_GET, [](AsyncWebServerRequest *request)
-	{ 
-		request->send(SPIFFS, "/PesoMinI.html"); 
-	});
+		server.on("/PesoMinI", HTTP_GET, [](AsyncWebServerRequest *request)
+		{ 
+			request->send(SPIFFS, "/PesoMinI.html"); 
+		});
 
-	server.on("/PesoMinP", HTTP_GET, [](AsyncWebServerRequest *request)
-	{ 
-		Serial.println("redirecionou");
+		server.on("/PesoMinP", HTTP_GET, [](AsyncWebServerRequest *request)
+		{ 
+			Serial.println("redirecionou");
 
-		AsyncWebParameter *p = request->getParam("alerta");
-		Serial.println(p->value().c_str());
+			AsyncWebParameter *p = request->getParam("alerta");
+			Serial.println(p->value().c_str());
 
-		PrintWebA();
-		Lista->ChecarValidade();
-		Lista->PrintMin(p->value().toInt(), 1);
-		Serial.println("opa");
-		PrintWebD();
-		Serial.println("opa");
-		request->send(SPIFFS, "/Print.html"); 
-	});
+			PrintWebA();
+			Lista->ChecarValidade();
+			Lista->PrintMin(p->value().toInt(), 1);
+			Serial.println("opa");
+			PrintWebD();
+			Serial.println("opa");
+			request->send(SPIFFS, "/Print.html"); 
+		});
 
-	server.on("/Nomes", HTTP_GET, [](AsyncWebServerRequest *request)
-	{ 
-		Serial.println("redirecionou");
+		server.on("/Nomes", HTTP_GET, [](AsyncWebServerRequest *request)
+		{ 
+			Serial.println("redirecionou");
 
-		PrintWebA();
-		Lista->PrintNomes(1);
-		PrintWebD();
-		request->send(SPIFFS, "/Print.html"); 
-	});
+			PrintWebA();
+			Lista->PrintNomes(1);
+			PrintWebD();
+			request->send(SPIFFS, "/Print.html"); 
+		});
 
-	server.on("/Alterados", HTTP_POST, [](AsyncWebServerRequest *request)
-			  { 
-		Lista->SalvarMudAut();
+		server.on("/Alterados", HTTP_POST, [](AsyncWebServerRequest *request)
+		{ 
+			Lista->SalvarMudAut();
 
-		request->send(200); });
+			request->send(200); 
+		});
 
-	server.on("/Alterados", HTTP_GET, [](AsyncWebServerRequest *request)
-	{ 
-		Serial.println("Alterados");
+		server.on("/Alterados", HTTP_GET, [](AsyncWebServerRequest *request)
+		{ 
+			Serial.println("Alterados");
 
-		std::string a = R"====(
-		<!DOCTYPE html>
-		<html>
-			<head>
-				<title>Mostrando Reagentes</title>
-  				<meta name="viewport" charset = "utf-8" content="width=device-width, initial-scale=1">
-				<script> 
-				function Salvar()
-				{
-					var a = new XMLHttpRequest();
-					a.open("POST", "/Alterados", true);											   // inicializa uma nova requisição, ou reinicializa uma requisição já existente.
-					a.setRequestHeader("Content-Type", "application/x-www-form-urlencoded"); // define o valor do cabeçalho de uma requisição HTTP
-					a.onreadystatechange = function()
+			std::string a = R"====(
+			<!DOCTYPE html>
+			<html>
+				<head>
+					<title>Mostrando Reagentes</title>
+					<meta name="viewport" charset = "utf-8" content="width=device-width, initial-scale=1">
+					<script> 
+					function Salvar()
 					{
-						if (this.readyState == 4 && this.status == 200)
+						var a = new XMLHttpRequest();
+						a.open("POST", "/Alterados", true);											   // inicializa uma nova requisição, ou reinicializa uma requisição já existente.
+						a.setRequestHeader("Content-Type", "application/x-www-form-urlencoded"); // define o valor do cabeçalho de uma requisição HTTP
+						a.onreadystatechange = function()
 						{
-							// Typical action to be performed when the document is ready:
-							alert("Requisição enviada com sucesso");
-						}
-						else if (this.readyState == 4 && this.status != 200)
-						{
-							alert("Requisição não foi enviada, pois houve alguma falha");
-						}
-					};
-					a.send("salvar=1"); // envia uma requisição para o servidor.
-				}
-				</script>
-				<link rel="icon" href="data:,">
- 				<link rel="stylesheet" type="text/css" href="style.css">
-			</head>
-			<body>
-			)====";
+							if (this.readyState == 4 && this.status == 200)
+							{
+								// Typical action to be performed when the document is ready:
+								alert("Requisição enviada com sucesso");
+							}
+							else if (this.readyState == 4 && this.status != 200)
+							{
+								alert("Requisição não foi enviada, pois houve alguma falha");
+							}
+						};
+						a.send("salvar=1"); // envia uma requisição para o servidor.
+					}
+					</script>
+					<link rel="icon" href="data:,">
+					<link rel="stylesheet" type="text/css" href="style.css">
+				</head>
+				<body>
+				)====";
 
-		SPIFFS.remove("/Print.html");
-		File T = SPIFFS.open("/Print.html", FILE_APPEND);
+			SPIFFS.remove("/Print.html");
+			File T = SPIFFS.open("/Print.html", FILE_APPEND);
 
-		T.write((uint8_t *)a.c_str(), a.size());
+			T.write((uint8_t *)a.c_str(), a.size());
 
-		T.close();
+			T.close();
 
-		Lista->SalvarAlteracao();
-		Lista->PrintAlterados(1);
+			Lista->SalvarAlteracao();
+			Lista->PrintAlterados(-1, 1);
 
-		a ="<p><button onclick = \"Salvar()\"> Salvar as indicacoes</button>\n";
-
-		T = SPIFFS.open("/Print.html", FILE_APPEND);
-
-		if (!Lista->Alterados.empty())
-		{
 			a ="<p><button onclick = \"Salvar()\"> Salvar as indicacoes</button>\n";
-			T.write((uint8_t *)a.c_str(), a.size());
-		}
-		else
-		{
-			a = "<p><button onclick = \"Salvar()\"> Confimar as mudancas - (não muda nada automaticamente)</button>\n";
-			T.write((uint8_t *)a.c_str(), a.size());
-		}
 
-		T.close();
-		PrintWebD();
-		request->send(SPIFFS, "/Print.html"); 
-	});
+			T = SPIFFS.open("/Print.html", FILE_APPEND);
 
-	server.on("/CriarRI", HTTP_GET, [](AsyncWebServerRequest *request)
-	{ 
-		request->send(SPIFFS, "/CriarReagI.html"); 
-	});
-
-	server.on("/CriarRP", HTTP_GET, [](AsyncWebServerRequest *request)
-	{ 
-		Serial.println("redirecionou");
-
-		AsyncWebParameter *p[8];
-		p[0] = request->getParam("Nome");
-		p[1] = request->getParam("PesoT");
-		p[2] = request->getParam("PesoC");
-		p[3] = request->getParam("PesoM");
-		p[4] = request->getParam("Dia");
-		p[5] = request->getParam("Mes");
-		p[6] = request->getParam("Ano");
-		p[7] = request->getParam("Alerta");
-
-		Lista->CriarReagente(p[0]->value().c_str(), p[1]->value().toFloat(), p[2]->value().toFloat(), p[3]->value().toFloat(), p[4]->value().toInt(), p[5]->value().toInt(), p[6]->value().toInt(), p[7]->value().toInt());
-		request->redirect("/"); 
-	});
-
-	server.on("/RemoverRI", HTTP_GET, [](AsyncWebServerRequest *request)
-	{ 
-		request->send(SPIFFS, "/RemoverReagI.html"); 
-	});
-
-	server.on("/RemoverRP", HTTP_GET, [](AsyncWebServerRequest *request)
-	{ 
-		if(request->hasParam("nome"))
-		{
-			AsyncWebParameter *p = request->getParam("nome");
-			std::string Nome = p->value().c_str();
-			Lista->EscolherReag(Nome);
-			if (Lista->PosiveisDistancias.size() > 1)
+			if (!Lista->Alterados.empty())
 			{
-				PrintWebA();
+				a ="<p><button onclick = \"Salvar()\"> Salvar as indicacoes</button>\n";
+				T.write((uint8_t *)a.c_str(), a.size());
+			}
+			else
+			{
+				a = "<p><button onclick = \"Salvar()\"> Confimar as mudancas - (não muda nada automaticamente)</button>\n";
+				T.write((uint8_t *)a.c_str(), a.size());
+			}
 
-				File T = SPIFFS.open("/Print.html", FILE_APPEND);
-				std::string a;
-				int b = 0;
+			T.close();
+			PrintWebD();
+			request->send(SPIFFS, "/Print.html"); 
+		});
 
-				for (std::deque<unsigned int>::iterator i = Lista->PosiveisDistancias.begin(); i < Lista->PosiveisDistancias.end(); i++, b++)
+		server.on("/CriarRI", HTTP_GET, [](AsyncWebServerRequest *request)
+		{ 
+			request->send(SPIFFS, "/CriarReagI.html"); 
+		});
+
+		server.on("/CriarRP", HTTP_GET, [](AsyncWebServerRequest *request)
+		{ 
+			Serial.println("redirecionou");
+
+			AsyncWebParameter *p[8];
+			p[0] = request->getParam("Nome");
+			p[1] = request->getParam("PesoT");
+			p[2] = request->getParam("PesoC");
+			p[3] = request->getParam("PesoM");
+			p[4] = request->getParam("Dia");
+			p[5] = request->getParam("Mes");
+			p[6] = request->getParam("Ano");
+			p[7] = request->getParam("Alerta");
+
+			Lista->CriarReagente(p[0]->value().c_str(), p[1]->value().toFloat(), p[2]->value().toFloat(), p[3]->value().toFloat(), p[4]->value().toInt(), p[5]->value().toInt(), p[6]->value().toInt(), p[7]->value().toInt());
+			request->redirect("/"); 
+		});
+
+		server.on("/RemoverRI", HTTP_GET, [](AsyncWebServerRequest *request)
+		{ 
+			request->send(SPIFFS, "/RemoverReagI.html"); 
+		});
+
+		server.on("/RemoverRP", HTTP_GET, [](AsyncWebServerRequest *request)
+		{ 
+			if(request->hasParam("nome"))
+			{
+				AsyncWebParameter *p = request->getParam("nome");
+				std::string Nome = p->value().c_str();
+				Lista->EscolherReag(Nome);
+				if (Lista->PosiveisDistancias.size() > 1)
 				{
+					PrintWebA();
+
+					File T = SPIFFS.open("/Print.html", FILE_APPEND);
+					std::string a;
+					int b = 0;
+
+					for (std::deque<unsigned int>::iterator i = Lista->PosiveisDistancias.begin(); i < Lista->PosiveisDistancias.end(); i++, b++)
+					{
+						T = SPIFFS.open("/Print.html", FILE_APPEND);
+						a = "\n<h1 class=\"nome\"><b>" + std::to_string(b) + "</b></h1>";
+						
+						T.write((uint8_t *)a.c_str(), a.size());
+						T.close();
+
+						Lista->PrintInfo((*i) - 1, 1);
+					}
+
 					T = SPIFFS.open("/Print.html", FILE_APPEND);
-					a = "\n<h1 class=\"nome\"><b>" + std::to_string(b) + "</b></h1>";
-					
+
+					a = std::string(R"====(
+						<form action="\RemoverRP" method="get">
+							<p><input type="number" Min="0" Max=")====") +
+						std::to_string(Lista->PosiveisDistancias.size() - 1) +
+						R"====(				" name="posicao" id="posicao" class="button">
+						<p><button type="submit" class="button">REMOVER</button>
+						</form>)====";
+
 					T.write((uint8_t *)a.c_str(), a.size());
 					T.close();
 
-					Lista->PrintInfo((*i) - 1, 1);
+					PrintWebD();
+
+					request->send(SPIFFS, "/Print.html");
 				}
-
-				T = SPIFFS.open("/Print.html", FILE_APPEND);
-
-				a = std::string(R"====(
-					<form action="\RemoverRP" method="get">
-						<p><input type="number" Min="0" Max=")====") +
-					std::to_string(Lista->PosiveisDistancias.size() - 1) +
-					R"====(				" name="posicao" id="posicao" class="button">
-					<p><button type="submit" class="button">REMOVER</button>
-					</form>)====";
-
-				T.write((uint8_t *)a.c_str(), a.size());
-				T.close();
-
-				PrintWebD();
-
-				request->send(SPIFFS, "/Print.html");
-			}
-			else if (Lista->PosiveisDistancias.size() == 1)
-			{
-				request->redirect("/RemoverRP?posicao=0");
-			}
-		}
-
-		if (request->hasParam("posicao"))
-		{
-			AsyncWebParameter *p = request->getParam("posicao");
-			Lista->RemoverReagente(Lista->PosiveisDistancias[p->value().toInt()]);
-			request->redirect("/");
-		}
-	});
-
-/*
-	server.on("/MudarP", HTTP_GET, [](AsyncWebServerRequest *request) 
-	{
-		if(request->hasParam("peso"))
-		{
-			AsyncWebParameter *p = request->getParam("peso");
-			Lista->PesoAtual = p->value().toFloat();
-			Lista->VerificarPeso();
-			request->redirect("/");
-		}
-		else
-		{
-			Serial.println(Lista->PesoAtual);
-			request->send(SPIFFS, "/MudarPeso.html");
-		}
-	});
-*/
-
-	server.on("/MudarPR", HTTP_GET, [](AsyncWebServerRequest *request)
-	{ 
-		if(request->hasParam("nome"))
-		{
-			AsyncWebParameter *p = request->getParam("nome");
-			std::string Nome = p->value().c_str();
-			Lista->EscolherReag(Nome);
-
-			p = request->getParam("peso");
-			Nome = p->value().c_str();
-			if (Lista->PosiveisDistancias.size() > 1)
-			{
-				PrintWebA();
-
-				File T = SPIFFS.open("/Print.html", FILE_APPEND);
-				std::string a;
-				int b = 0;
-
-				for (std::deque<unsigned int>::iterator i = Lista->PosiveisDistancias.begin(); i < Lista->PosiveisDistancias.end(); i++, b++)
+				else if (Lista->PosiveisDistancias.size() == 1)
 				{
+					request->redirect("/RemoverRP?posicao=0");
+				}
+			}
+
+			if (request->hasParam("posicao"))
+			{
+				AsyncWebParameter *p = request->getParam("posicao");
+				Lista->RemoverReagente(Lista->PosiveisDistancias[p->value().toInt()]);
+				request->redirect("/");
+			}
+		});
+
+		/*
+			server.on("/MudarP", HTTP_GET, [](AsyncWebServerRequest *request) 
+			{
+				if(request->hasParam("peso"))
+				{
+					AsyncWebParameter *p = request->getParam("peso");
+					Lista->PesoAtual = p->value().toFloat();
+					Lista->VerificarPeso();
+					request->redirect("/");
+				}
+				else
+				{
+					Serial.println(Lista->PesoAtual);
+					request->send(SPIFFS, "/MudarPeso.html");
+				}
+			});
+		*/
+
+		server.on("/MudarPR", HTTP_GET, [](AsyncWebServerRequest *request)
+		{ 
+			if(request->hasParam("nome"))
+			{
+				AsyncWebParameter *p = request->getParam("nome");
+				std::string Nome = p->value().c_str();
+				Lista->EscolherReag(Nome);
+
+				p = request->getParam("peso");
+				Nome = p->value().c_str();
+				if (Lista->PosiveisDistancias.size() > 1)
+				{
+					PrintWebA();
+
+					File T = SPIFFS.open("/Print.html", FILE_APPEND);
+					std::string a;
+					int b = 0;
+
+					for (std::deque<unsigned int>::iterator i = Lista->PosiveisDistancias.begin(); i < Lista->PosiveisDistancias.end(); i++, b++)
+					{
+						T = SPIFFS.open("/Print.html", FILE_APPEND);
+						a = "\n<h1 class=\"nome\"><b>" + std::to_string(b) + "</b></h1>";
+						
+						T.write((uint8_t *)a.c_str(), a.size());
+						T.close();
+
+						Lista->PrintInfo((*i) - 1, 1);
+					}
+
 					T = SPIFFS.open("/Print.html", FILE_APPEND);
-					a = "\n<h1 class=\"nome\"><b>" + std::to_string(b) + "</b></h1>";
-					
+
+					a = std::string(R"====(
+						<form action="\MudarPR" method="get">
+							<p><input type="number" min="0" max=")====") +
+						std::to_string(Lista->PosiveisDistancias.size() - 1) + R"====(				" name="posicao" id="posicao" class="button"> Numero do Escolido
+							<p><input type="hidden" name="peso" id="peso" class="button" value=")====" +
+						Nome + R"====("></p>
+						<p><button type="submit" class="button">ESCOLHER</button>
+						</form>)====";
+
 					T.write((uint8_t *)a.c_str(), a.size());
 					T.close();
 
-					Lista->PrintInfo((*i) - 1, 1);
+					PrintWebD();
+
+					request->send(SPIFFS, "/Print.html");
 				}
-
-				T = SPIFFS.open("/Print.html", FILE_APPEND);
-
-				a = std::string(R"====(
-					<form action="\MudarPR" method="get">
-						<p><input type="number" min="0" max=")====") +
-					std::to_string(Lista->PosiveisDistancias.size() - 1) + R"====(				" name="posicao" id="posicao" class="button"> Numero do Escolido
-    					<p><input type="hidden" name="peso" id="peso" class="button" value=")====" +
-					Nome + R"====("></p>
-					<p><button type="submit" class="button">ESCOLHER</button>
-					</form>)====";
-
-				T.write((uint8_t *)a.c_str(), a.size());
-				T.close();
-
-				PrintWebD();
-
-				request->send(SPIFFS, "/Print.html");
-			}
-			else if (Lista->PosiveisDistancias.size() == 1)
+				else if (Lista->PosiveisDistancias.size() == 1)
+				{
+					std::string a = "/MudarPR?posicao=0&peso=" + Nome;
+					request->redirect(a.c_str());
+				}
+			} 
+			
+			if (request->hasParam("posicao"))
 			{
-				std::string a = "/MudarPR?posicao=0&peso=" + Nome;
-				request->redirect(a.c_str());
+				AsyncWebParameter *p = request->getParam("posicao");
+				int Posi = p->value().toInt();
+
+				p = request->getParam("peso");
+				Lista->TrocarPeso((int)Lista->PosiveisDistancias[Posi], p->value().toFloat());
+				request->redirect("/");
 			}
-		} 
-		
-		if (request->hasParam("posicao"))
-		{
-			AsyncWebParameter *p = request->getParam("posicao");
-			int Posi = p->value().toInt();
 
-			p = request->getParam("peso");
-			Lista->TrocarPeso((int)Lista->PosiveisDistancias[Posi], p->value().toFloat());
-			request->redirect("/");
-		}
+			request->send(SPIFFS, "/MudarPesoReag.html");
+			
+		});
 
-		request->send(SPIFFS, "/MudarPesoReag.html");
-		
-	});
+		server.on("/LimpH", HTTP_GET, [](AsyncWebServerRequest *request)
+				{ 
+			Lista->LimparHistorico();
+			request->redirect("/"); });
 
-	server.on("/LimpH", HTTP_GET, [](AsyncWebServerRequest *request)
-			  { 
-		Lista->LimparHistorico();
-		request->redirect("/"); });
-
-	server.on("/Limpar", HTTP_GET, [](AsyncWebServerRequest *request)
-			  { 
-		Lista->Limpar();
-		request->redirect("/"); });
+		server.on("/Limpar", HTTP_GET, [](AsyncWebServerRequest *request)
+				{ 
+			Lista->Limpar();
+			request->redirect("/"); });
 	}
 	
 	// Start server
@@ -1055,11 +1165,100 @@ void setup()
 
 int LugarMain = 0;
 bool MainM = true;
-int voltasMain = 0;
-int Loops = 0;
+uint16_t VoltasMain = 0;
+uint8_t Loops = 0;
+uint8_t VoltasMin = 1;
+uint8_t VoltasVal = 1;
+uint8_t VoltasAlt = 1;
+
+bool Tare = false;
 
 void loop()
 {
+	if (Loops == 0)
+	{
+		VoltasMain++;
+
+		if(VoltasMain == 6)
+		{
+			Lista->PrintMin(VoltasMin, 2);
+
+			if (!Lista->PosiveisDistancias.empty())
+			{
+				LEDs(VoltasMin);
+				Serial.print("Minimos\t");
+				Serial.println(VoltasMin);
+				Serial.println();
+			}
+			else
+			{
+				Serial.print("Minimos N\t");
+				Serial.println(VoltasMin);
+				Serial.println();
+			}
+
+			if (VoltasMin >= 3)
+				VoltasMin = 1;
+			else
+				VoltasMin++;
+		}
+
+		if (VoltasMain == 12)
+		{
+			Lista->PrintValidade(VoltasVal, 2);
+
+			if (!Lista->PosiveisDistancias.empty())
+			{
+					LEDs(VoltasVal + 3);
+					Serial.print("Validade\t");
+					Serial.println(VoltasVal);
+					Serial.println();
+			}
+			else
+			{
+					Serial.print("Validade N\t");
+					Serial.println(VoltasVal);
+					Serial.println();
+			}
+
+			if (VoltasVal >= 3)
+				VoltasVal = 1;
+			else
+				VoltasVal++;
+		}
+
+		if (VoltasMain == 18)
+		{
+			Lista->SalvarAlteracao();
+			Lista->PrintAlterados(VoltasAlt, 2);
+
+			if (!Lista->PosiveisDistancias.empty())
+			{
+				LEDs(VoltasAlt + 6);
+				Serial.print("Alterados\t");
+				Serial.println(VoltasAlt);
+				Serial.println();
+			}
+			else
+			{
+				Serial.print("Alterados N\t");
+				Serial.println(VoltasAlt);
+				Serial.println();
+			}
+
+			if (VoltasAlt >= 3)
+				VoltasAlt = 1;
+			else
+				VoltasAlt++;
+		}
+
+		if (VoltasMain == 24)
+			LEDs(0);
+
+		if (VoltasMain >= 30)
+			VoltasMain = 0;
+	}
+
 	if(Loops == 0 && digitalRead(LERB))
 		Lista->VerificarPeso();
 
@@ -1071,26 +1270,36 @@ void loop()
 	if (MainM)
 	{
 		lcd.clear();
+		lcd.setCursor(0, 0);
 
-		Serial.println("mudou");
+		Serial.print("mudou\t");
+		Serial.println(LugarMain);
 
 		if (LugarMain == 0)
 		{
+			Serial.println("min");
 			lcd.print("Ver os Minimos");
-			MainM = false;
 		}
-
-		if (LugarMain == 1 && MainM && voltasMain == 0)
+		else if (LugarMain == 1)
 		{
+			Serial.println("ven");
 			lcd.print("Ver os Vencidos");
-			MainM = false;
+		}
+		else if (LugarMain == 2)
+		{
+			Serial.println("alt");
+			lcd.print("Ver os Alterados");
+		}
+		else if (LugarMain == 3)
+		{
+			Serial.println("pes");
+			lcd.print("Ver o Peso");
+			lcd.setCursor(0, 1);
+			lcd.print("tarar");
+			Tare = false;
 		}
 
-		if (LugarMain == 2 && MainM && voltasMain == 0)
-		{
-			lcd.print("Ver os Alterados");
-			MainM = false;
-		}
+		MainM = false;
 	}
 
 	if (digitalRead(ENTRAR))
@@ -1124,6 +1333,28 @@ void loop()
 
 			if (a > -1)
 				PrintAlteradosDislpay(a);
+		}
+		else if (LugarMain == 3)
+		{
+			if(!Tare)
+			{
+				float Peso = scale.get_units(1);
+				lcd.setCursor(0, 1);
+				lcd.print(Peso);
+				delay(500);
+			}
+			else
+			{
+				lcd.clear();
+				lcd.setCursor(0, 0);
+				lcd.print("Peso");
+				lcd.print("pesar");
+				scale.tare();
+
+				Tare = false;
+			}
+
+			MainM = false;
 		}
 	}
 
