@@ -1,7 +1,8 @@
-.vs
+.vscode
 .sln
 balanca.vcxproj
 .vcxproj.*
 $/
 bin/
 bin-int/
+
